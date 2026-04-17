@@ -1,0 +1,228 @@
+/* ===== 全局 ===== */
+body {
+  margin: 0;
+  background: #ebe8e8;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: hidden;
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* ===== MIDI舞台 ===== */
+#noteContainerWrapper {
+  width: 85%;
+  max-width: 1400px;
+  height: 80vh;  /* 稍微小一点，给面板和播放条留空间 */
+  margin: 0 auto;
+  overflow-x: auto;
+  background: #fafafa;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+
+#noteContainer {
+  position: relative;
+  height: 100%;
+}
+
+/* ===== 播放线   没用到！ ===== */
+#playhead {
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  background: #00e0ff;
+  box-shadow: 0 0 6px #00e0ff;
+}
+
+/* ===== 音符 ===== */
+
+
+.note {
+  position: absolute;
+  height: 6px;
+  background: #C1BFBF;
+  border-radius: 2px;
+  opacity: 0.7;
+  transition: 0.1s;
+}
+
+.note.active {
+  background-color: #000;
+}
+
+
+.note.active.glow {
+  box-shadow: 
+    0 0 8px #00e0ff,
+    0 0 18px rgba(0,224,255,0.5);
+}
+
+/* ===== 粒子 ===== */
+.particle {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #00e0ff;
+  position: absolute;
+  pointer-events: none;
+  animation: particleFade 0.6s ease-out forwards;
+}
+
+@keyframes particleFade {
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* ===== 悬浮面板 ===== */
+.panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%) scale(1);
+
+  background: rgba(20,20,20,0.5);
+  backdrop-filter: blur(20px);
+
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+
+  padding: 20px;
+
+  z-index: 100;
+
+  transition: all 0.35s ease;
+
+  background: rgba(100, 100, 100, 0.5);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  z-index: 100;
+  transition: 0.4s;
+}
+
+.panel.hidden {
+  transform: translate(-50%, -140%);
+  opacity: 0;
+}
+
+/* ===== 行布局 ===== */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+/* ===== 输入 ===== */
+input {
+  background: #111;
+  border: 1px solid #333;
+  color: #fff;
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: text;
+}
+
+/* ===== 底部播放器 ===== */
+.player-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  
+  background: rgba(100, 100, 100, 0.5);
+  backdrop-filter: blur(20px);
+  
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  
+  padding: 10px 18px;
+  
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  z-index: 200;
+}
+
+/* ===== 按钮 ===== */
+button {
+  background: #111;
+  border: 1px solid #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #222;
+  border-color: #555;
+}
+
+/* 👉 播放按钮更突出 */
+#playBtn {
+  background: #00e0ff;
+  color: #000;
+  font-weight: bold;
+}
+
+#playBtn:hover {
+  background: #0ff;
+}
+
+/* ===== 开关 ===== */
+.toggle {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+
+/* ===== 上传midicss ===== */
+.upload-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 90px;
+
+  padding: 6px 10px;
+  border-radius: 8px;
+
+  background: rgba(41, 41, 41, 0.434);
+  border: 1px solid rgba(255,255,255,0.08);
+
+  font-size: 15px;
+  cursor: pointer;
+  margin-bottom: 16px; /* 👈 关键 */
+  transition: 0.2s;
+}
+
+.upload-line:hover {
+  border-color: #000000;
+  background: rgba(0,224,255,0.06);
+}
+
+.upload-line.dragover {
+  border-color: #ff0000;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+#uploadText {
+  opacity: 0.7;
+}
+
+#fileName {
+  color: #ffffff;
+  font-weight: 500;
+}
+

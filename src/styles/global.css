@@ -1,0 +1,206 @@
+:root {
+  --bg: #e6e6e6;
+  --dark: #0a0a0a;
+  --accent: #000000;
+  --border: rgba(0,0,0,0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  cursor: default;
+}
+
+body {
+  margin: 0;
+
+  /* ✅ 背景底色 */
+  background-color: var(--bg);
+
+ 
+  /* ✅ 防止白边 */
+  min-height: 100vh;
+}
+
+/* 背景canvas */
+#canvas-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  opacity: 0.4;
+}
+
+
+/* ===== Logo 在左上角 ===== */
+.site-logo {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1001;
+  -webkit-text-stroke: 0.5px var(--dark);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: transparent;
+  transition: color 0.3s;
+}
+
+.site-logo:hover {
+  color: var(--accent);
+}
+
+
+/* 导航栏：克制而精致 */
+
+.top-nav {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+
+  width: auto;
+  max-width: none;
+
+  z-index: 999;
+}
+
+.nav {
+  position: fixed;
+  top: 20px;
+  right: 80px;
+  z-index: 999;
+
+  pointer-events: none; /* 给磁吸用 */
+}
+
+/* ===== 内部卡片 ===== */
+.nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: relative; /* 必须有 */
+  padding: 10px 20px;
+  pointer-events: auto;
+  /* ===== 核心：玻璃背景 ===== */
+
+    background: rgba(255,255,255,0.08); 
+    /* ❗比黑色更高级，像磨砂玻璃 */
+
+    backdrop-filter: blur(20px); 
+    -webkit-backdrop-filter: blur(20px); /* 兼容Safari */
+
+    /* ===== 边缘高光（关键） ===== */
+    border: 1px solid rgba(255,255,255,0.18);
+
+    /* ===== 阴影（悬浮感） ===== */
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+
+    border-radius: 12px;
+
+    transition: 0.4s;
+    position: relative;
+}
+
+.nav-inner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  border-radius: inherit;
+
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.25),
+    rgba(255,255,255,0.05)
+  );
+
+  pointer-events: none;
+}
+
+/* ===== 滚动后状态 ===== */
+.nav.scrolled .nav-inner {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(30px);
+}
+
+/* ===== logo ===== */
+.logo {
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: #000000;
+}
+
+/* ===== 导航链接 ===== */
+.nav-links {
+  display: flex;
+  gap: 18px;
+}
+
+.nav-links a {
+  color: #303030;
+  text-decoration: none;
+  font-size: 13px;
+  position: relative;
+  transition: 0.3s;
+}
+
+/* hover颜色 */
+.nav-links a:hover {
+  color: #fff;
+}
+
+/* ===== 下划线动画 ===== */
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+
+  width: 0;
+  height: 1px;
+
+  background: linear-gradient(90deg, #fff, transparent);
+  transition: 0.3s;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+/* Hero Section */
+.hero {
+    height: 90vh;
+    padding: 15vh 5% 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.hero-title h1 {
+    font-size: 12vw;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+}
+
+.hero-title h1.accent {
+    padding-left: 10vw;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--dark);
+}
+
+.hero-sub {
+    margin-top: 20px;
+    font-size: 14px;
+    font-weight: 300;
+    color: #666;
+}
+
+
+
+/* 输入框 */
+input {
+    cursor: text;
+}
+
+
