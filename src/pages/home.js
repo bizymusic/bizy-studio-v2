@@ -7,7 +7,7 @@ renderNav();
 
     <section class="hero">
       <div class="hero-title">
-        <h1 class="reveal-text">Bizy Lab</h1>
+        <h1 class="reveal-text">Bizy Labbb</h1>
         <h1 class="reveal-text accent">ENGINEERING</h1>
       </div>
       <p class="hero-sub">
