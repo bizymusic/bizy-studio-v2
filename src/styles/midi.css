@@ -1,24 +1,12 @@
 /* ===== 全局 ===== */
-body {
-  margin: 0;
-  background: #ebe8e8;
-  color: #000000;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  overflow: hidden;
-  
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
+
 
 /* ===== MIDI舞台 ===== */
 #noteContainerWrapper {
   width: 85%;
   max-width: 1400px;
-  height: 80vh;  /* 稍微小一点，给面板和播放条留空间 */
-  margin: 0 auto;
+  height: 90vh;  /* 稍微小一点，给面板和播放条留空间 */
+  margin: 40px auto;
   overflow-x: auto;
   background: #fafafa;
   border-radius: 12px;

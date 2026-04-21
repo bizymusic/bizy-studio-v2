@@ -249,7 +249,10 @@ allNotes.sort((a, b) => a.time - b.time);
 
 totalDuration = Math.max(...allNotes.map(n => n.time + n.duration));
 
-container.style.width = `${totalDuration * pixelsPerSecond + 100}px`;
+const halfWidth = containerWrapper.clientWidth / 2;
+container.style.marginLeft = `${halfWidth}px`;  // 将0秒的位置推到屏幕正中间
+container.style.marginRight = `${halfWidth}px`; // 让最后一颗音符播放完时也能停在正中间
+container.style.width = `${totalDuration * pixelsPerSecond}px`;
 
 allNotes.forEach(note => {
     const div = document.createElement("div");
@@ -285,8 +288,8 @@ lastFrameTime = timestamp;
 playbackTime = (timestamp - animationStartTime) / 1000 * tempoFactor;
 const position = playbackTime * pixelsPerSecond;
 
-containerWrapper.scrollLeft =
-    position - containerWrapper.clientWidth / 2;
+// 因为左侧已经有了 marginLeft 作为缓冲，直接等于 position 即可
+containerWrapper.scrollLeft = position;
 
 noteElements.forEach(({ div, note }) => {
     const start = note.time;

@@ -17,6 +17,11 @@ body {
 
   /* ✅ 背景底色 */
   background-color: var(--bg);
+   /* ✅ 背景图片 */
+  background-image: url("/public/img/bg1.jpg");
+  background-size: cover;        /* 覆盖全屏 */
+  background-position: center;   /* 居中 */
+  background-repeat: no-repeat;  /* 不重复 */
 
  
   /* ✅ 防止白边 */
@@ -68,7 +73,8 @@ body {
 .nav {
   position: fixed;
   top: 20px;
-  right: 80px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 999;
 
   pointer-events: none; /* 给磁吸用 */
