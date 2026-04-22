@@ -141,20 +141,23 @@ body {
 /* ===== 导航链接 ===== */
 .nav-links {
   display: flex;
-  gap: 18px;
+  gap: 30px;
 }
 
 .nav-links a {
-  color: #303030;
+  font-weight: 500; 
+  color: #494949;
   text-decoration: none;
   font-size: 13px;
   position: relative;
   transition: 0.3s;
+  letter-spacing: 0.3px;
+  
 }
 
 /* hover颜色 */
 .nav-links a:hover {
-  color: #fff;
+  color: #000000;
 }
 
 /* ===== 下划线动画 ===== */
@@ -167,7 +170,7 @@ body {
   width: 0;
   height: 1px;
 
-  background: linear-gradient(90deg, #fff, transparent);
+  background: linear-gradient(90deg, #000000, transparent);
   transition: 0.3s;
 }
 
@@ -178,30 +181,45 @@ body {
 /* Hero Section */
 .hero {
     height: 90vh;
-    padding: 15vh 5% 0;
+    padding: 15vh 5% 4vh; /* 底部增加 4vh 内边距，防止文字贴死边缘 */
     display: flex;
     flex-direction: column;
+    
 }
 
 .hero-title h1 {
-    font-size: 12vw;
+    font-size: 10vw;
     letter-spacing: -0.05em;
     text-transform: uppercase;
 }
 
 .hero-title h1.accent {
-    padding-left: 10vw;
-    color: transparent;
+    font-size: 12vw;
+    padding-left: 12vw;
+    color: transparent; 
     -webkit-text-stroke: 1px var(--dark);
+    transform: translateY(6vh);
 }
 
-.hero-sub {
-    margin-top: 20px;
-    font-size: 14px;
-    font-weight: 300;
-    color: #666;
-}
 
+.site-footer {
+  /* 定位样式 */
+  position: fixed;
+  left: 5%;
+  bottom: 5vh;
+  z-index: 100;
+  pointer-events: none;
+
+  /* 文字样式（原本在 .hero-sub 里的） */
+  font-size: 14px;
+  font-weight: 300;
+  color: #666;
+  
+  
+  /* 确保没有默认间距干扰 */
+  margin: 0;
+  padding: 0;
+}
 
 
 /* 输入框 */

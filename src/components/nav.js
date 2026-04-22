@@ -11,6 +11,7 @@ export function renderNav() {
                 <a href="/">Home</a>
                 <a href="https://music.163.com/#/artist?id=13681128">BizyMusic</a>
                 <a href="#">AI Music</a>
+                <a href="#">HarmonyLab</a>
                 <a href="midiview.html">MIDI可视化</a>
             </div>
         </div>
