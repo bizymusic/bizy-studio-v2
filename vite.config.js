@@ -12,8 +12,8 @@ export default defineConfig({
     }),
   ],
   define: {
-    // 强制补全 process.hrtime，防止 magenta 崩溃
-    'process.hrtime': '(() => [0, 0])', 
-    'global.process.hrtime': '(() => [0, 0])',
+    // 注意：这里必须用 JSON.stringify 或者带引号的字符串包裹代码片段
+    'process.hrtime': 'function() { return [0, 0]; }', 
+    'global.process.hrtime': 'function() { return [0, 0]; }',
   }
 });
