@@ -11,9 +11,5 @@ export default defineConfig({
       },
     }),
   ],
-  define: {
-    // 注意：这里必须用 JSON.stringify 或者带引号的字符串包裹代码片段
-    'process.hrtime': 'function() { return [0, 0]; }', 
-    'global.process.hrtime': 'function() { return [0, 0]; }',
-  }
+  // 彻底删掉 define 这里的配置，不再挑战 esbuild 的规则
 });

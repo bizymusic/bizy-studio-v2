@@ -3,7 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <title>Bizy Studio</title>
-  
+  <script>
+  // 专门解决 Cloudflare 构建报错及 Magenta 运行时缺失 hrtime 的补丁
+  (function() {
+    const p = window.process || {};
+    if (!p.hrtime) {
+      p.hrtime = function() {
+        const now = performance.now();
+        const seconds = Math.floor(now / 1000);
+        const nanoseconds = Math.floor((now % 1000) * 1000000);
+        return [seconds, nanoseconds];
+      };
+    }
+    window.process = p;
+    window.global = window;
+  })();
+</script>
 </head>
 <body>
 
