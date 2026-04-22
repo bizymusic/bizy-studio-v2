@@ -18,7 +18,7 @@ body {
   /* ✅ 背景底色 */
   background-color: var(--bg);
    /* ✅ 背景图片 */
-  background-image: url("/public/img/bg1.jpg");
+  background-image: url("/img/bg1.jpg");
   background-size: cover;        /* 覆盖全屏 */
   background-position: center;   /* 居中 */
   background-repeat: no-repeat;  /* 不重复 */
@@ -201,25 +201,23 @@ body {
     transform: translateY(6vh);
 }
 
-
 .site-footer {
-  /* 定位样式 */
-  position: fixed;
-  left: 5%;
-  bottom: 5vh;
-  z-index: 100;
-  pointer-events: none;
-
-  /* 文字样式（原本在 .hero-sub 里的） */
+  /* 1. 彻底放弃绝对和固定定位 */
+  position: relative; 
+  
+  /* 2. 布局：靠左对齐，给点边距 */
+  width: 100%;
+  padding: 20px 5% 20px; /* 顶部给 40px 间距，防止贴着 MIDI 舞台 */
+  
+  /* 3. 确保它在最下面 */
+  clear: both;
+  
+  /* 4. 样式保持你的风格 */
   font-size: 14px;
   font-weight: 300;
   color: #666;
-  
-  
-  /* 确保没有默认间距干扰 */
-  margin: 0;
-  padding: 0;
 }
+
 
 
 /* 输入框 */

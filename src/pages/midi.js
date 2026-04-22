@@ -61,6 +61,10 @@ renderNav();
       <button id="openPanelBtn">⚙</button>
 
     </div>
+    
+    <footer class="site-footer">
+       BIZY STUDIO / MUSIC PRODUCER & WEB DEVELOPER. © 2026
+    </footer>
 
 `;
 
