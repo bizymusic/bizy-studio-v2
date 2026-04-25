@@ -19,7 +19,7 @@ particleToggle.addEventListener("change", () => {
 // ===== DOM =====
 const fileInput = document.getElementById("fileInput");
 const bpmInput = document.getElementById("bpmInput");
-const applyBpmBtn = document.getElementById("applyBpmBtn");
+
 const scaleSlider = document.getElementById("scaleSlider");
 const scaleValue = document.getElementById("scaleValue");
 const verticalSlider = document.getElementById("verticalSlider");
@@ -38,6 +38,7 @@ const particleSystem = createParticleSystem(container);
 if (openPanelBtn) {
 openPanelBtn.addEventListener("click", () => {
     panel.classList.toggle("hidden");
+    
 });
 }
 
@@ -126,36 +127,37 @@ handleFile(file);
 
 // 统一处理
 async function handleFile(file) {
-if (!file) return;
+    if (!file) return;
+    fileName.textContent = file.name;
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        midiData = new Midi(arrayBuffer);
 
-fileName.textContent = file.name;
+        // --- 优化点：自动读取并显示 BPM ---
+        const detectedBpm = Math.round(midiData.header.tempos?.[0]?.bpm || 120);
+        bpmInput.value = detectedBpm; 
+        customBpm = detectedBpm; 
+        // -------------------------------
 
-try {
-    const arrayBuffer = await file.arrayBuffer();
-    midiData = new Midi(arrayBuffer);
-
-    bpmInput.value = "";
-    customBpm = null;
-
-    buildVisualizer();
-} catch (err) {
-    console.error(err);
-    alert("❌ MIDI 解析失败");
+        buildVisualizer();
+    } catch (err) {
+        console.error(err);
+        alert("❌ MIDI 解析失败");
+    }
 }
-}
 
-applyBpmBtn.addEventListener("click", () => {
-const bpmVal = parseFloat(bpmInput.value);
-if (!isNaN(bpmVal) && bpmVal > 0) {
-    customBpm = bpmVal;
-    buildVisualizer();
-}
-});
+
 
 // ===== 播放控制（合并版）=====
 playBtn.addEventListener("click", () => {
 if (!midiData) return;
-
+// --- 新增：播放前最后确认一次 BPM ---
+    const currentBpmInput = parseFloat(bpmInput.value);
+    if (!isNaN(currentBpmInput) && currentBpmInput > 0 && currentBpmInput !== customBpm) {
+        customBpm = currentBpmInput;
+        buildVisualizer(); // 如果 BPM 变了，重新计算所有音符位置
+    }
+    // ----------------------------------
 if (!hasStarted) {
     hasStarted = true;
     paused = false;
@@ -165,6 +167,7 @@ if (!hasStarted) {
 
     playBtn.textContent = "⏸";
     panel.classList.add("hidden");
+    document.body.classList.add("recording-mode");
     return;
 }
 
@@ -175,9 +178,11 @@ if (!paused) {
     requestAnimationFrame(animate);
     playBtn.textContent = "⏸";
     panel.classList.add("hidden");
+    document.body.classList.add("recording-mode");
 } else {
     playBtn.textContent = "▶";
     panel.classList.remove("hidden");
+    document.body.classList.remove("recording-mode");
 }
 });
 
@@ -201,6 +206,7 @@ container.innerHTML = "";
 
 playBtn.textContent = "▶";
 panel.classList.remove("hidden");
+document.body.classList.remove("recording-mode");
 });
 
 // ===== 重播 =====
@@ -219,6 +225,7 @@ playBtn.textContent = "⏸";
 panel.classList.add("hidden");
 
 requestAnimationFrame(animate);
+document.body.classList.add("recording-mode");
 });
 
 // ===== 构建 =====
@@ -334,6 +341,7 @@ if (playbackTime < totalDuration) {
 
     playBtn.textContent = "▶";
     panel.classList.remove("hidden");
+    document.body.classList.remove("recording-mode");
     hasStarted = false;
 }
 }

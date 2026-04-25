@@ -5,18 +5,44 @@
 #noteContainerWrapper {
   width: 85%;
   max-width: 1400px;
-  height: 90vh;  /* 稍微小一点，给面板和播放条留空间 */
+  height: 90vh;
   margin: 40px auto;
   overflow-x: auto;
-  background: #fafafa;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  
+  /* 默认玻璃样式 */
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px); 
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  /* 只有这个框在变色时有 0.5s 的过渡 */
+  transition: background 0.5s ease, border 0.5s ease, box-shadow 0.5s ease;
 }
 
 
 #noteContainer {
   position: relative;
   height: 100%;
+}
+
+/* ===== 录制模式 (当 body 有 .recording-mode 时生效) ===== */
+
+/* 1. 舞台变白 */
+body.recording-mode #noteContainerWrapper {
+  background: #ffffff !important;   
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+
+
+/* 3. 录制模式下强制隐藏面板 (双重保险) */
+body.recording-mode .panel {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* ===== 播放线   没用到！ ===== */
@@ -68,48 +94,117 @@
     opacity: 0;
   }
 }
-
-/* ===== 悬浮面板 ===== */
+/* ===== 核心控制面板 ===== */
 .panel {
   position: fixed;
   top: 50%;
   left: 50%;
-
   transform: translate(-50%, -50%) scale(1);
-
-  background: rgba(20,20,20,0.5);
-  backdrop-filter: blur(20px);
-
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-
-  padding: 20px;
-
   z-index: 100;
-
-  transition: all 0.35s ease;
-
-  background: rgba(100, 100, 100, 0.5);
+  width: 400px;
+  padding: 24px; /* 面板通常比导航栏需要更大的内边距 */
+  
+  /* ===== 移植的高级玻璃视觉 ===== */
+  background: rgba(255, 255, 255, 0.08); 
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 16px;
-  z-index: 100;
-  transition: 0.4s;
-}
-
-.panel.hidden {
-  transform: translate(-50%, -140%);
+  -webkit-backdrop-filter: blur(20px); /* 兼容 Safari */
+  
+  /* 边缘高光与阴影 */
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  
+  /* 圆角与动画 */
+  border-radius: 16px; /* 面板稍大，16px 的圆角比导航栏的 12px 更协调 */
+  /* transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 加了一个更丝滑的缓动曲线 */
+  visibility: hidden; 
   opacity: 0;
 }
 
+/* ===== 移植面板的高级内侧打光 ===== */
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit; /* 自动继承父级的 16px 圆角 */
+  background: linear-gradient(
+    120deg,
+    rgba(79, 153, 196, 0.25),
+    rgba(255, 255, 255, 0.05)
+  );
+  pointer-events: none; /* 防止遮挡面板内部按钮的点击 */
+}
+
+/* .panel.hidden {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.95);
+  pointer-events: none;
+} */
+ .panel.hidden,
+body.recording-mode .panel {
+  opacity: 0 !important;
+  visibility: hidden !important; /* 彻底从渲染树隐藏，防止挡住点击 */
+  pointer-events: none !important;
+  
+  /* 允许消失时有一个微小的缩放 */
+  transform: translate(-50%, -50%) scale(0.9) !important;
+  transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s !important;
+}
+
 /* ===== 行布局 ===== */
-.row {
+  .row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 15px;
+  width: 100%;
+  }
+  /* 固定左侧标签宽度 */
+  .row label {
+    flex-shrink: 0;
+    width: 70px;
+    font-size: 13px;
+    color: rgb(0, 0, 0);
+    font-weight: 500;
+  }
+
+    /* --- 第一行特殊处理：缩短 label 宽度防止换行 --- */
+  .row.compact-row label {
+    width: 83px; 
+  }
+
+  .row.compact-row label:nth-of-type(2) {
+    margin-left: 40px; /* 给两个组之间留点空隙 */
+  }
+  /* 中间控件伸缩 */
+  .row input[type="range"] {
+    flex: 1;
+    margin: 0 15px;
+    font-size: 13px;
+  }
+
+  /* 限制数字输入框的宽度 */
+  .row input[type="number"] {
+    flex: 1;             /* 自动填充剩余空间 */
+    max-width: 70px;     /* 核心：防止 input 过宽 */
+    background: rgb(96, 96, 96);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 6px;
+    border-radius: 6px;
+    text-align: center;
+    outline: none;
+  }
+
+
+/* 右侧数值固定宽度，防止跳动 */
+.val-num {
+  width: 20px;
+  text-align: right;
+  font-size: 12px;
+  color: rgb(0, 0, 0);
 }
+
+
+
 
 /* ===== 输入 ===== */
 input {
@@ -142,33 +237,80 @@ input {
   
   z-index: 200;
 }
-
-/* ===== 按钮 ===== */
+/* ===== 核心 UI 按钮 (适配磨砂玻璃风格) ===== */
 button {
-  background: #111;
-  border: 1px solid #333;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 8px;
+  /* 基础材质：半透明深色 */
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  
+  /* 边框：极其细微的高光边 */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  
+  padding: 8px 16px; /* 稍微增加一点内边距，更有呼吸感 */
+  border-radius: 10px; /* 圆角稍微圆润一点点，配合面板 */
   cursor: pointer;
-  transition: 0.2s;
+  
+  /* 动画：使用更优雅的缓动 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 14px;
+  letter-spacing: 0.5px;
 }
 
 button:hover {
-  background: #222;
-  border-color: #555;
+  /* 悬停：背景加深，文字变亮，向上微动 */
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* 👉 播放按钮更突出 */
+button:active {
+  /* 点击：回弹效果 */
+  transform: translateY(0);
+}
+/* 👉 播放按钮：冷灰铝合金质感 (纯净黑白灰) */
 #playBtn {
-  background: #00e0ff;
-  color: #000;
-  font-weight: bold;
+  /* 基础：深灰半透明，像磨砂金属 */
+  background: rgba(45, 45, 45, 0.5); 
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  /* 边框：纯白的极细微光边，模拟金属切边 */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  /* 图标：纯白色，带一点点光晕 */
+  color: #ffffff;
+  
+  /* 阴影：深色的自然阴影 */
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    inset 0 0 1px rgba(255, 255, 255, 0.1);
+  
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 #playBtn:hover {
-  background: #0ff;
+  /* 悬停时：整体稍微提亮，呈现银色质感 */
+  background: rgba(70, 70, 70, 0.7);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+  
+  /* 增强白色发光感，显得更“干净” */
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.25),
+    0 0 10px rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
 }
+
+#playBtn:active {
+  background: rgba(30, 30, 30, 0.9);
+  transform: translateY(0) scale(0.97);
+}
+
+
 
 /* ===== 开关 ===== */
 .toggle {
@@ -178,39 +320,91 @@ button:hover {
 
 
 /* ===== 上传midicss ===== */
+/* ===== 上传区域优化 ===== */
 .upload-line {
   display: inline-flex;
   align-items: center;
-  gap: 90px;
+  justify-content: space-between; /* 建议换成这个，让文字分别靠在两头 */
+  width: 100%; /* 让它撑满面板宽度 */
+  box-sizing: border-box; /* 防止宽度撑破面板 */
+  
+  padding: 10px 14px;
+  border-radius: 10px;
 
-  padding: 6px 10px;
-  border-radius: 8px;
+  /* 👈 加深后的背景色：使用更纯的深色，降低透明度 */
+  background: rgb(0, 0, 0); 
+  border: 1px solid rgba(255, 255, 255, 0.12);
 
-  background: rgba(41, 41, 41, 0.434);
-  border: 1px solid rgba(255,255,255,0.08);
-
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
-  margin-bottom: 16px; /* 👈 关键 */
-  transition: 0.2s;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
 }
 
 .upload-line:hover {
-  border-color: #000000;
-  background: rgba(0,224,255,0.06);
-}
-
-.upload-line.dragover {
-  border-color: #ff0000;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+  /* 悬停时：不要青色背景，改为边框提亮 */
+  background: rgba(30, 30, 30, 0.8);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 #uploadText {
-  opacity: 0.7;
+  color: rgba(255, 255, 255, 0.5); /* 提示文字稍微暗一点 */
 }
 
 #fileName {
   color: #ffffff;
   font-weight: 500;
+  /* 增加一个超过长度自动省略的效果，防止文件名太长撑开面板 */
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+
+/* 1. 定义滚动条整体宽度和高度（横向滚动看高度） */
+#noteContainerWrapper::-webkit-scrollbar {
+  width: 6px;  /* 纵向滚动条宽度 */
+  height: 6px; /* 横向滚动条高度 */
+}
+
+/* 2. 定义滚动条轨道（背景） */
+#noteContainerWrapper::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05); /* 极淡的透明背景 */
+  border-radius: 10px;
+}
+
+/* 3. 定义滑块（那个动的部分） */
+#noteContainerWrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2); /* 半透明白 */
+  backdrop-filter: blur(4px);          /* 也可以加点模糊 */
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.3s ease;
+}
+
+/* 4. 鼠标悬停时滑块变亮一点 */
+#noteContainerWrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+#noteContainerWrapper::-webkit-scrollbar-corner {
+  background: rgba(255, 255, 255, 0.05); /* 和你自定义的轨道颜色一样 */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+
+
+/* --- 移除 Chrome, Safari, Edge, Opera 的调节箭头 --- */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* --- 移除 Firefox 的调节箭头 --- */
+input[type="number"] {
+  -moz-appearance: textfield;
+}

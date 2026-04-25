@@ -1,16 +1,17 @@
 import { gsap } from "gsap";
 
-// 导出通用文字揭示动画
 export const revealAnimation = (selector = ".reveal-text") => {
-    // 检查页面上是否有这个元素，没有就不跑，防止报错
-    if (!document.querySelector(selector)) return;
+    const el = document.querySelector(selector);
+    if (!el) return;
 
-    gsap.from(selector, {
-        y: 100,
+    gsap.from(el, {
+        y: 50,
         opacity: 0,
         duration: 1.2,
-        stagger: 0.2,
         ease: "power4.out",
-        delay: 0.2
+        // 核心：动画跑完后，立刻删掉 GSAP 留下的所有 style 痕迹
+        onComplete: () => {
+            gsap.set(el, { clearProps: "all" });
+        }
     });
 };
