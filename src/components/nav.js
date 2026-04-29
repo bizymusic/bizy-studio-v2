@@ -9,11 +9,17 @@ export function renderNav() {
     <nav class="nav" id="nav">
       <div class="nav-inner" id="navInner">
         <div class="nav-links">
-          <a href="/">Home</a>
+          <a href="index.html">Home</a>
           <a href="https://music.163.com/#/artist?id=13681128">BizyMusic</a>
-          <a href="/">AI Music</a>
+          <a href="ai-music.html">AI Music</a>
           <a href="harmony.html">HarmonyLab</a>
-          <a href="midiview.html">MIDI可视化</a>
+          <div class="dropdown">
+                <a href="#" class="dropdown-trigger">View</a>
+                <div class="dropdown-menu">
+                    <a href="audioview.html">音频可视化</a>
+                    <a href="midiview.html">MIDI可视化</a>
+                </div>
+            </div>
         </div>
       </div>
     </nav>
@@ -45,5 +51,8 @@ export function renderNav() {
       gsap.to(navInner, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
     }
   });
+
+  
+
 }
 

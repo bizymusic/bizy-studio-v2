@@ -80,6 +80,8 @@ body {
   pointer-events: none; /* 给磁吸用 */
 }
 
+
+
 /* ===== 内部卡片 ===== */
 .nav-inner {
   display: flex;
@@ -124,6 +126,72 @@ body {
   pointer-events: none;
 }
 
+
+
+
+
+/* 下拉菜单 */
+.dropdown {
+    position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 下拉菜单基础样式 */
+.dropdown-menu {
+   display: none;
+  position: absolute;
+  top: 100%; 
+  left: 0; /* 因为 trigger 没加左右 padding，这里直接 0 就能对齐 */
+  
+  padding: 10px 0;
+  
+  background: transparent; 
+  z-index: 1000;
+}
+
+/* 下拉菜单内的链接样式 */
+.dropdown-menu a {
+    display: block;
+  padding: 8px 12px;  /* 给内部留出呼吸感 */
+  margin-left: -12px; /* 👈 核心：背景向左拉回，使文字首字保持垂直对齐 */
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+  text-decoration: none;
+  border-radius: 6px; /* 稍微圆润一点，更现代 */
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+/* 去掉下拉链接默认的下划线动画（不然会很难看） */
+.dropdown-menu a::after {
+  display: none;
+}
+
+/* ===== 悬停状态：精致背景与文字变黑 ===== */
+.dropdown-menu a:hover {
+  background: rgba(0, 0, 0, 0.05); /* 淡淡的灰色背景，不抢视线 */
+  color: #000;
+  transform: translateX(4px);    /* 稍微右移增加灵动感 */
+}
+
+/* 鼠标悬停在整个区域时显示 */
+.dropdown:hover .dropdown-menu {
+  display: block;
+  animation: fadeInDown 0.3s ease-out;
+}
+
+/* 简单的下拉动画 */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px); /* 只做纵向位移 */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 /* ===== 滚动后状态 ===== */
 .nav.scrolled .nav-inner {
   background: rgba(255,255,255,0.12);
@@ -142,9 +210,11 @@ body {
 .nav-links {
   display: flex;
   gap: 30px;
+  align-items: center;
 }
 
-.nav-links a {
+
+.nav-links a, .dropdown-trigger {
   font-weight: 500; 
   color: #494949;
   text-decoration: none;

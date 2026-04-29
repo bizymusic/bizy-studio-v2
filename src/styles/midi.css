@@ -5,8 +5,8 @@
 #noteContainerWrapper {
   width: 85%;
   max-width: 1400px;
-  height: 90vh;
-  margin: 40px auto;
+  height: 85vh;
+  margin: 70px auto 40px;
   overflow-x: auto;
   
   /* 默认玻璃样式 */
