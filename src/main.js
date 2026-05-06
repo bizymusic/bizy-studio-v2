@@ -10,17 +10,34 @@ async function router() {
 
   if (app) app.innerHTML = ""; 
 
-  try {
-    if (path.includes("midiview")) {
-      await import("./pages/midi.js");
-    } else if (path.includes("harmony")) {
-      await import("./pages/harmony.js");
-    } else {
-      await import("./pages/home.js");
-    }
-  } catch (err) {
-    console.error("加载页面失败:", err);
+try {
+  // 清空 app 容器，防止页面叠加
+  const app = document.getElementById("app");
+  if (app) app.innerHTML = ""; 
+
+  if (path.includes("midiview")) {
+    const { initMidi } = await import("./pages/midi.js");
+    initMidi(); 
+  } 
+  else if (path.includes("chordgen")) {
+    const { initImmersive } = await import("./pages/chordgen.js");
+    initImmersive();
+  } 
+  else if (path.includes("melodyimprov")) {
+    const { initMelodyImprov } = await import("./pages/melodyimprov.js");
+    initMelodyImprov();
+  } 
+  else if (path.includes("audioview")) {
+    const { initAudioView } = await import("./pages/audioview.js");
+    initAudioView();
   }
+  else {
+    const { initHome } = await import("./pages/home.js");
+    initHome();
+  }
+} catch (error) {
+  console.error("路由加载错误:", error);
+}
 }
 
 window.addEventListener("popstate", router);

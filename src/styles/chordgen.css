@@ -1,0 +1,56 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+.immersive-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.top-bar {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.mood-btn {
+  margin: 0 10px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+
+.center-info {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+}
+
+#chord-display {
+  font-size: 64px;
+  margin: 0;
+  letter-spacing: 2px;
+}
+
+#status {
+  opacity: 0.7;
+}
