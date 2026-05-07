@@ -1,8 +1,8 @@
 import "../styles/chordgen.css";
-import * as Tone from "tone";
 import { Chord } from "tonal";
 
-// 模块顶层：只声明变量，不初始化任何 Tone 对象
+// ===== 变量声明 =====
+let Tone = null;
 let synth = null;
 let transport = null;
 let started = false;
@@ -16,8 +16,11 @@ const moodPresets = {
   cinematic: ["Dm", "Bb", "F", "C"]
 };
 
+// ===== UI 初始化 =====
 export function initImmersive() {
   const app = document.getElementById("app");
+  if (!app) return;
+  
   app.innerHTML = `
     <div class="immersive-container">
       <div class="top-bar">
@@ -25,148 +28,190 @@ export function initImmersive() {
         <button class="mood-btn" data-mood="sad">Sad</button>
         <button class="mood-btn" data-mood="focus">Focus</button>
         <button class="mood-btn" data-mood="cinematic">Cinematic</button>
+
+        
       </div>
+      
+      
       <canvas id="bg-canvas"></canvas>
-      <div class="center-info">
+      <div class="center-info" id="center-control">
+        <div class="pulse-ring"></div>
         <h1 id="chord-display">Cmaj7</h1>
-        <p id="status">Click a mood to start</p>
+          <p id="status">
+                  Click to Play
+          </p>
+        
       </div>
-    </div>
   `;
+  
   setupUI();
   startVisualizer();
 }
 
+// ===== 动态加载 Tone.js（关键：避免自动播放拦截）=====
+async function loadToneIfNeeded() {
+  if (Tone) return Tone;
+  const toneModule = await import("tone");
+  Tone = toneModule;
+  return Tone;
+}
 
-console.log("Before resume:", Tone.context.state);
-await Tone.context.resume();
-console.log("After resume:", Tone.context.state); // 必须是 "running"
-// ✅ 核心修复：在用户手势内直接 resume AudioContext
-async function initAudioOnUserGesture() {
-  if (started) {
-    console.log("⚠️ Already started, skipping init");
-    return;
-  }
+// ===== 音频初始化（用户手势内调用）=====
+async function initAudioOnUserGesture(mood) {
+  if (started) return true;
   
-  console.log("🔑 Starting audio init...");
-  const context = Tone.context;
-  console.log("📦 Context before resume:", context.state);
+  const ToneModule = await loadToneIfNeeded();
+  const context = ToneModule.context;
   
   if (context.state === "suspended") {
     await context.resume();
   }
-  console.log("✅ Context after resume:", context.state);
-  
-  // 创建 synth
-  if (!synth) {
-    console.log("🎹 Creating synth...");
-    synth = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: "sine" },
-      envelope: {
-        attack: 0.1,  // 🔥 改成 0.1 秒，立刻出声
-        decay: 0.1,
-        sustain: 0.5,
-        release: 2
-      }
-    }).toDestination();
-    console.log("✅ Synth created, connected to destination");
+  if (context.state !== "running") {
+    throw new Error("AudioContext failed to start");
   }
-  
-  // 设置 transport
+    
+  if (!synth) {
+
+    // ===== 混响 =====
+    const reverb = new ToneModule.Reverb({
+      decay: 8,
+      wet: 0.35
+    }).toDestination();
+
+    // ===== 滤波器（去刺耳高频）=====
+    const filter = new ToneModule.Filter(1400, "lowpass");
+
+    // ===== Synth =====
+    synth = new ToneModule.PolySynth(ToneModule.Synth, {
+
+      oscillator: {
+        type: "triangle"
+      },
+
+      envelope: {
+        attack: 1.2,
+        decay: 0.4,
+        sustain: 0.5,
+        release: 4
+      },
+
+      volume: -18
+
+    });
+
+  // ===== 音频链 =====
+  synth.connect(filter);
+  filter.connect(reverb);
+}
   if (!transport) {
-    console.log("🚚 Getting Transport...");
-    transport = Tone.Transport;
-    transport.bpm.value = 50;
+    transport = ToneModule.Transport;
+    transport.bpm.value = 60;
     transport.cancel();
     
-    transport.scheduleRepeat((time) => {
-      console.log("⏰ scheduleRepeat triggered, index:", index);
+    transport.scheduleRepeat(() => {
       const progression = moodPresets[currentMood];
       const chord = progression[index % progression.length];
-      console.log("🎵 Playing chord:", chord);
       playChord(chord);
       updateUI(chord);
       index++;
-    }, "2n"); // 每半拍触发一次
-    console.log("✅ Transport scheduled");
+    }, "1n");
   }
   
   if (transport.state !== "started") {
-    console.log("🚀 Starting transport, current state:", transport.state);
     transport.start();
   }
   
   started = true;
-  console.log("🎉 Audio init complete!");
+  return true;
 }
 
+// ===== 播放和弦 =====
 function playChord(chordName) {
-  console.log("🔊 playChord called with:", chordName);
-  
-  if (!synth) {
-    console.error("❌ synth is null!");
-    return;
-  }
-  console.log("✅ synth exists, state:", synth.state);
-  
+  if (!synth) return;
   const chord = Chord.get(chordName);
-  console.log("📋 Chord object:", chord);
-  
-  if (!chord.notes?.length) {
-    console.error("❌ No notes in chord!");
-    return;
-  }
-  
-  const notes = chord.notes.map(n => n + "4");
-  console.log("🎼 Triggering notes:", notes);
-  
-  synth.triggerAttackRelease(notes, "2n");
-  console.log("✅ triggerAttackRelease called");
+  if (!chord.notes?.length) return;
+  const octaves = [3,4,4,5];
+
+const notes = chord.notes.map((n, i) => {
+  return n + (octaves[i] || 4);
+});
+  synth.triggerAttackRelease(notes, "1n");
 }
 
+// ===== 更新 UI =====
 function updateUI(chordName) {
   const el = document.getElementById("chord-display");
   if (el) el.innerText = chordName;
 }
 
-
+// ===== 绑定按钮事件 =====
 function setupUI() {
+
+  // mood 按钮
   document.querySelectorAll(".mood-btn").forEach(btn => {
     btn.addEventListener("click", async (e) => {
       e.preventDefault();
-      document.getElementById("status").innerText = "Starting...";
-      
+
+      const mood = btn.dataset.mood;
+      const statusEl = document.getElementById("status");
+
+      statusEl.innerText = "🎵 Starting...";
+
       try {
-        // ✅ 所有 Tone 初始化在这个用户手势内完成
-        await initAudioOnUserGesture();
-        
-        currentMood = btn.dataset.mood;
+        await initAudioOnUserGesture(mood);
+
+        currentMood = mood;
         index = 0;
-        document.getElementById("status").innerText = `Playing: ${currentMood}`;
+
+        statusEl.innerText = `✨ Playing: ${mood}`;
+
       } catch (err) {
-        console.error("Audio init failed:", err);
-        document.getElementById("status").innerText = "Audio blocked - click again";
-        // 重试：有些浏览器需要多次点击
-        if (Tone.context.state === "suspended") {
-          Tone.context.resume().catch(() => {});
-        }
+        console.error(err);
+        statusEl.innerText = "❌ Retry";
       }
     });
   });
+
+  // center 控制（唯一控制器）
+  const centerControl = document.getElementById("center-control");
+
+  centerControl.addEventListener("click", async () => {
+
+    const statusEl = document.getElementById("status");
+
+    if (!started) {
+      await initAudioOnUserGesture(currentMood);
+      statusEl.innerText = "✨ Playing";
+      return;
+    }
+
+    if (transport.state === "started") {
+      transport.pause();
+      statusEl.innerText = "断开";
+      centerControl.classList.add("paused");
+    } else {
+      transport.start();
+      statusEl.innerText = "✨ Playing";
+      centerControl.classList.remove("paused");
+    }
+
+  });
 }
 
-// ... startVisualizer 和 getMoodColors 保持不变 ...
+// ===== 背景可视化 =====
 function startVisualizer() {
   const canvas = document.getElementById("bg-canvas");
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
-  resize();
-  window.addEventListener("resize", resize);
-  let t = 0;
+  
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
+  resize();
+  window.addEventListener("resize", resize);
+  
+  let t = 0;
   function draw() {
     t += 0.005;
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -175,32 +220,39 @@ function startVisualizer() {
     gradient.addColorStop(1, colors[1]);
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
     ctx.beginPath();
-    for (let x = 0; x < canvas.width; x++) {
-      const y = canvas.height / 2 + Math.sin(x * 0.01 + t) * 40;
+    for (let x = 0; x < canvas.width; x += 10) {
+      const y = canvas.height/2 + Math.sin(x * 0.01 + t) * 40;
       ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = "rgba(255,255,255,0.1)";
+    ctx.strokeStyle = "rgba(255,255,255,0.15)";
     ctx.stroke();
     requestAnimationFrame(draw);
   }
   draw();
 }
 
+// ===== 情绪配色 =====
 function getMoodColors(mood) {
-  switch (mood) {
-    case "calm": return ["#1e3c72", "#2a5298"];
-    case "sad": return ["#232526", "#414345"];
-    case "focus": return ["#134E5E", "#71B280"];
-    case "cinematic": return ["#0f2027", "#2c5364"];
-    default: return ["#000", "#333"];
-  }
+  const map = {
+    calm: ["#1e3c72", "#2a5298"],
+    sad: ["#232526", "#414345"],
+    focus: ["#134E5E", "#71B280"],
+    cinematic: ["#0f2027", "#2c5364"]
+  };
+  return map[mood] || ["#000", "#333"];
 }
 
+
+
+// ===== 清理函数（页面卸载时调用）=====
 export function cleanupImmersive() {
   if (transport) { transport.cancel(); transport.stop(); }
-  if (synth) { synth.releaseAll(); synth.dispose(); synth = null; }
+  if (synth) { synth.dispose(); synth = null; }
+  Tone = null;
   transport = null;
   started = false;
   index = 0;
 }
+
