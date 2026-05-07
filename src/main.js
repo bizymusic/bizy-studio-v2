@@ -15,14 +15,14 @@ async function router() {
       initMidi(); 
     } 
     else if (path.includes("chordgen")) {
-  console.log(" 尝试加载 chordgen.js...");
-  const mod = await import("./pages/chordgen.js");
-  console.log("✅ 模块导出:", Object.keys(mod));
-  if (typeof mod.initImmersive === "function") {
-    mod.initImmersive();
-  } else {
-    console.error("❌ initImmersive 未导出或不是函数");
-  }
+    console.log(" 尝试加载 chordgen.js...");
+    const mod = await import("./pages/chordgen.js");
+    console.log("✅ 模块导出:", Object.keys(mod));
+    if (typeof mod.initImmersive === "function") {
+      mod.initImmersive();
+    } else {
+      console.error("❌ initImmersive 未导出或不是函数");
+    }
     } 
     else if (path.includes("melodyimprov")) {
       const { initMelodyImprov } = await import("./pages/melodyimprov.js");

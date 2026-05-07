@@ -10,12 +10,12 @@ export function initHome() {
     <main>
       <section class="hero">
         <div class="hero-title">
-          <h1 class="reveal-text">Bizy Studio</h1>
+          <h1 class="reveal-text">Bizy Sound</h1>
           <h1 class="reveal-text accent">ENGINEERING</h1>
         </div>
       </section>
       <footer class="site-footer">
-         BIZY STUDIO / MUSIC PRODUCER & WEB DEVELOPER. © 2026
+         BIZY SOUND / MUSIC PRODUCER & WEB DEVELOPER. © 2026
       </footer>
     </main>
   `;
