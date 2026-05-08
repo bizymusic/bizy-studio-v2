@@ -47,7 +47,7 @@ body {
   -webkit-text-stroke: 0.5px var(--dark);
   text-decoration: none;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1rem;
   color: transparent;
   transition: color 0.3s;
 }
@@ -227,7 +227,7 @@ body {
 /* ===== logo ===== */
 .logo {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: #000000;
 }
@@ -320,5 +320,4 @@ body {
 input {
     cursor: text;
 }
-
 
