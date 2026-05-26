@@ -9,23 +9,23 @@ export function renderNav() {
     <nav class="nav" id="nav">
       <div class="nav-inner" id="navInner">
         <div class="nav-links">
-          <a href="index.html">假装在工作</a>
-          <a href="https://music.163.com/#/artist?id=13681128">正经听歌</a>
+          <a href="index.html">BIZYSOUND</a>
+          <a href="https://music.163.com/#/artist?id=13681128">听觉日记</a>
           <a href="ai-music.html">甩锅给AI</a>
 
           <div class="dropdown">
-                <a href="#" class="dropdown-trigger">其实我不会</a>
+                <a href="#" class="dropdown-trigger">AI作曲</a>
                 <div class="dropdown-menu">
-                    <a href="chordgen.html">和弦？不认识</a>
-                    <a href="melodyimprov.html">旋律？随缘吧</a>
+                    <a href="chordgen.html">和弦生成</a>
+                    <a href="melodyimprov.html">旋律即兴</a>
                 </div>
           </div>
 
           <div class="dropdown">
-                <a href="#" class="dropdown-trigger">但我会看</a>
+                <a href="#" class="dropdown-trigger">可视化</a>
                 <div class="dropdown-menu">
-                    <a href="audioview.html">波形挺好看</a>
-                    <a href="midiview.html">方块挺整齐</a>
+                    <a href="audioview.html">音频波形</a>
+                    <a href="midiview.html">MIDI视图</a>
                 </div>
           </div>
 
