@@ -11,10 +11,10 @@ export function renderNav() {
         <div class="nav-links">
           <a href="index.html">BIZYSOUND</a>
           <a href="https://music.163.com/#/artist?id=13681128">听觉日记</a>
-          <a href="ai-music.html">甩锅给AI</a>
+          <a href="ai-music.html">AI音乐</a>
 
           <div class="dropdown">
-                <a href="#" class="dropdown-trigger">AI作曲</a>
+                <a href="#" class="dropdown-trigger">创作工具</a>
                 <div class="dropdown-menu">
                     <a href="chordgen.html">和弦生成</a>
                     <a href="melodyimprov.html">旋律即兴</a>
