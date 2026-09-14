@@ -59,17 +59,6 @@ body {
 
 /* 导航栏：克制而精致 */
 
-.top-nav {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-
-  width: auto;
-  max-width: none;
-
-  z-index: 999;
-}
-
 .nav {
   position: fixed;
   top: 20px;
@@ -319,5 +308,239 @@ body {
 /* 输入框 */
 input {
     cursor: text;
+}
+
+
+.mobile-menu-btn,
+.mobile-menu-panel{
+    display:none;
+}
+
+/* =================================
+   Mobile Responsive
+   ================================= */
+
+@media (max-width: 768px) {
+
+
+/* ===== 背景 ===== */
+
+body {
+    background-position: center center;
+    background-size: auto 100%;
+}
+
+
+/* ===== Logo ===== */
+
+.site-logo {
+    top:18px;
+    left:18px;
+    font-size:14px;
+}
+
+
+/* ===== 手机导航 ===== */
+.nav {
+
+    top:20px;
+    right:20px;
+
+    left:auto;
+
+    transform:none;
+
+}
+
+.nav-inner {
+
+    padding:0;
+
+    background:none;
+
+    backdrop-filter:none;
+
+    -webkit-backdrop-filter:none;
+
+    border:none;
+
+    box-shadow:none;
+
+}
+
+
+
+
+
+    .nav-links{
+        display:none;
+    }
+
+    .mobile-menu-btn{
+        display:block;
+    }
+    
+
+
+
+/* ===== Hero ===== */
+
+.hero {
+
+    height:auto;
+    min-height:90vh;
+
+    padding:
+    30vh 6% 10vh;
+
+}
+
+
+/* 第一行 */
+
+.hero-title h1 {
+    
+    font-size:13vw;
+    letter-spacing:-0.06em;
+
+}
+
+
+/* 第二行 */
+
+.hero-title h1.accent {
+
+    font-size:14vw;
+
+    padding-left:0;
+
+    margin-top:90px;
+
+    transform:none;
+
+}
+
+
+
+/* ===== footer ===== */
+
+.site-footer {
+
+    padding:20px 6%;
+
+    font-size:11px;
+
+}
+
+
+/* ===== canvas降低性能 ===== */
+
+#canvas-container {
+
+    opacity:0.25;
+
+}
+
+/* ===== 1. MENU 按钮美化 ===== */
+.mobile-menu-btn {
+    display: block;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    outline: none;
+    
+    /* ✅ 1. 彻底消除 iOS/Android 手机点击时的蓝色/灰色半透明遮罩 */
+    -webkit-tap-highlight-color: transparent;
+    
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    color: var(--dark);
+    
+    padding: 6px 0;
+    position: relative;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+/* ✅ 2. 消除聚焦（Focus）时的系统蓝色高亮边框 */
+.mobile-menu-btn:focus,
+.mobile-menu-btn:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* 点击时的优雅缩放/透明度反馈，替代原生的丑蓝色框 */
+.mobile-menu-btn:active {
+    opacity: 0.6;
+}
+
+/* 底部动态下划线保持不变 */
+.mobile-menu-btn::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 2px;
+    width: 100%;
+    height: 1px;
+    background: #000;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-menu-btn:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+    /* ===== 2. 手机菜单展开面板 (核心修复) ===== */
+    .mobile-menu-panel {
+        display: flex;             /* 开启 Flex 布局 */
+        flex-direction: column;    /* 垂直排列链接 */
+        gap: 16px;                 /* 链接间的间距 */
+        
+        position: fixed;
+        top: 70px;                 /* 位于顶部导航下方 */
+        right: 20px;               /* 靠右对齐 */
+        width: 200px;              /* 面板宽度 */
+        padding: 20px;
+        
+        /* 高级玻璃磨砂质感 (延续你的全站风格) */
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        z-index: 1000;
+
+        /* ✅ 默认隐藏状态 (结合透明度与动画) */
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px) scale(0.95);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ✅ 3. 点击激活后的显示状态 (配合你的 JS class) */
+    .mobile-menu-panel.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+    }
+
+    /* ===== 3. 面板内链接样式 ===== */
+    .mobile-menu-panel a {
+        font-size: 14px;
+        font-weight: 500;
+        color: rgba(0, 0, 0, 0.7);
+        text-decoration: none;
+        transition: color 0.3s ease, transform 0.2s ease;
+    }
+
+    .mobile-menu-panel a:hover {
+        color: #000;
+        transform: translateX(4px); /* 轻微右移效果 */
+    }
 }
 
