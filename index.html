@@ -2,15 +2,13 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta 
-name="viewport" 
-content="width=device-width, initial-scale=1.0"
-/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
   <title>Bizy Sound</title>
+  <link rel="icon" href="/favicon.ico?v=1" />
     <script>
       window.global = window; // 必须在所有 JS 加载前执行
-    window.process = window.process || { env: { NODE_ENV: 'production' } };
+      window.process = window.process || { env: { NODE_ENV: 'production' } };
     // 专门解决 Cloudflare 构建报错及 Magenta 运行时缺失 hrtime 的补丁
     (function() {
       const p = window.process || {};
@@ -27,6 +25,7 @@ content="width=device-width, initial-scale=1.0"
     })();
   </script>
 </head>
+
 <body>
 
   <div id="app"></div>
