@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import { renderNav } from "../components/nav.js";
 import { initVisualizer } from "../midi/visualizer.js";
 import { ensureAudioContext } from "../midi/audioEngine.js";
+import { toggleMute } from "../midi/audioEngine.js";
 import "../styles/midi.css";
 
 // ===== 2. 渲染顶部导航栏 =====
@@ -77,6 +78,7 @@ document.getElementById("app").innerHTML = `
     </div>
 
     <div class="player-actions">
+      <button id="muteBtn" title="静音/取消静音">🔊</button>
       <button id="openPanelBtn" title="设置">⚙</button>
     </div>
   </div>
@@ -111,3 +113,12 @@ setTimeout(() => {
     );
   }
 }, 100);
+
+const muteBtn = document.getElementById("muteBtn");
+if (muteBtn) {
+  muteBtn.addEventListener("click", () => {
+    const isMuted = toggleMute();
+    muteBtn.textContent = isMuted ? "🔇" : "🔊";
+    muteBtn.classList.toggle("muted", isMuted);
+  });
+}

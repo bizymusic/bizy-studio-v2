@@ -3,6 +3,7 @@ import { Chord } from "tonal";
 
 let synth = null;
 let activeNotes = new Set();
+let isMuted = false;
 
 // ===== 初始化 Synth 声音引擎 =====
 
@@ -82,3 +83,12 @@ export function updateAudioAndChord(notesAtCurrentTime = []) {
     }
   }
 }
+
+
+
+    // ===== 切换静音状态 =====
+    export function toggleMute() {
+    isMuted = !isMuted;
+    Tone.Destination.mute = isMuted; // Tone.js 全局静音
+    return isMuted;
+    }

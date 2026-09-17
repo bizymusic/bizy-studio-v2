@@ -273,6 +273,11 @@ body.recording-mode .panel {
   align-items: center;
   gap: 8px;
 }
+/* ===== 静音按钮样式 ===== */
+.player-actions button.muted {
+  color: #ff4757; /* 静音时变为红色或高亮提示 */
+  border-color: #ff4757;
+}
 
 /* ===== ⏱️ 采样器屏幕式进度条 (LCD 屏) ===== */
 .progress-wrapper {
