@@ -1,5 +1,6 @@
 import { Midi } from "https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/+esm";
 import { createParticleSystem } from "./particles.js";
+import { updateAudioAndChord } from "./audioEngine.js";
 
 export function initVisualizer() {
   // ===== 粒子开关 =====
@@ -30,7 +31,7 @@ export function initVisualizer() {
   const container = document.getElementById("noteContainer");
   const particleSystem = createParticleSystem(container);
 
-  // ⏱️ 时间与进度条 DOM (新增)
+  // ⏱️ 时间与进度条 DOM
   const currentTimeEl = document.getElementById("currentTime");
   const totalTimeEl = document.getElementById("totalTime");
   const progressFill = document.getElementById("progressFill");
@@ -63,7 +64,7 @@ export function initVisualizer() {
   let playbackEnded = false;
   let hasStarted = false;
   let lastFrameTime = 0;
-  let isDraggingProgress = false; // 是否正在拖拽进度条
+  let isDraggingProgress = false;
 
   // ===== ⏱️ 辅助：时间格式化 =====
   function formatTime(seconds) {
@@ -89,7 +90,6 @@ export function initVisualizer() {
     playbackTime = Math.min(Math.max(0, targetTime), totalDuration);
     animationStartTime = performance.now() - (playbackTime / tempoFactor) * 1000;
     
-    // 立即滚动画面并渲染音符状态
     const position = playbackTime * pixelsPerSecond;
     if (containerWrapper) containerWrapper.scrollLeft = position;
     updateTimeUI(playbackTime);
@@ -126,7 +126,7 @@ export function initVisualizer() {
     if (noteElements.length > 0) rescaleNotes();
   });
 
-  // ===== ⏱️ 进度条交互 (点击 & 拖拽跳转) =====
+  // ===== ⏱️ 进度条交互 =====
   if (progressBarContainer) {
     const handleProgressScrub = (e) => {
       if (!midiData || !totalDuration) return;
@@ -149,7 +149,6 @@ export function initVisualizer() {
       isDraggingProgress = false;
     });
 
-    // 移动端 Touch 支持
     progressBarContainer.addEventListener("touchstart", (e) => {
       isDraggingProgress = true;
       handleProgressScrub(e.touches[0]);
@@ -241,6 +240,7 @@ export function initVisualizer() {
       panel.classList.add("hidden");
       document.body.classList.add("recording-mode");
     } else {
+      updateAudioAndChord([]);
       playBtn.textContent = "▶";
       panel.classList.remove("hidden");
       document.body.classList.remove("recording-mode");
@@ -250,6 +250,7 @@ export function initVisualizer() {
   // ===== 重置 =====
   resetBtn.addEventListener("click", () => {
     cancelAnimationFrame(animationFrame);
+    updateAudioAndChord([]);
 
     midiData = null;
     allNotes = [];
@@ -270,7 +271,6 @@ export function initVisualizer() {
     panel.classList.remove("hidden");
     document.body.classList.remove("recording-mode");
 
-    // 重置时间 display
     if (currentTimeEl) currentTimeEl.textContent = "00:00";
     if (totalTimeEl) totalTimeEl.textContent = "00:00";
     if (progressFill) progressFill.style.width = "0%";
@@ -282,6 +282,7 @@ export function initVisualizer() {
     if (!midiData) return;
 
     cancelAnimationFrame(animationFrame);
+    updateAudioAndChord([]);
 
     paused = false;
     playbackTime = 0;
@@ -299,6 +300,7 @@ export function initVisualizer() {
   // ===== 构建 =====
   function buildVisualizer() {
     cancelAnimationFrame(animationFrame);
+    updateAudioAndChord([]);
 
     container.innerHTML = "";
     allNotes = [];
@@ -324,7 +326,6 @@ export function initVisualizer() {
 
     totalDuration = Math.max(...allNotes.map((n) => n.time + n.duration));
 
-    // ⏱️ 设置总时间 UI
     if (totalTimeEl) totalTimeEl.textContent = formatTime(totalDuration);
     updateTimeUI(0);
 
@@ -355,12 +356,15 @@ export function initVisualizer() {
 
   // ===== 音符高亮/粒子绘制辅助逻辑 =====
   function renderNoteState(curTime, timestamp = performance.now()) {
+    const activeFrameNotes = [];
+
     noteElements.forEach(({ div, note }) => {
       const start = note.time;
       const end = start + Math.max(note.duration, minHighlightTime);
 
       if (curTime >= start && curTime < end) {
         div.classList.add("active");
+        activeFrameNotes.push({ pitch: note.name });
 
         if (enableParticles) {
           div.classList.add("glow");
@@ -383,6 +387,8 @@ export function initVisualizer() {
         div.classList.remove("glow");
       }
     });
+
+    updateAudioAndChord(activeFrameNotes);
   }
 
   // ===== 动画主循环 =====
@@ -394,17 +400,14 @@ export function initVisualizer() {
     const delta = (timestamp - (lastFrameTime || timestamp)) / 1000;
     lastFrameTime = timestamp;
 
-    // 拖拽进度条时暂停自动累加时间，避免与鼠标冲突
     if (!isDraggingProgress) {
       playbackTime = ((timestamp - animationStartTime) / 1000) * tempoFactor;
       const position = playbackTime * pixelsPerSecond;
       containerWrapper.scrollLeft = position;
 
-      // ⏱️ 逐帧更新时间数字和进度条 Fill
       updateTimeUI(playbackTime);
     }
 
-    // 渲染音符与粒子
     renderNoteState(playbackTime, timestamp);
 
     if (enableParticles) {
@@ -415,6 +418,7 @@ export function initVisualizer() {
       animationFrame = requestAnimationFrame(animate);
     } else if (!playbackEnded) {
       playbackEnded = true;
+      updateAudioAndChord([]);
 
       setTimeout(() => alert("🎉 播放完成！"), 800);
 

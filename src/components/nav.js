@@ -11,7 +11,7 @@ export function renderNav() {
       <div class="nav-inner" id="navInner">
         <div class="nav-links">
           <!-- ===== 桌面导航 ===== -->
-          <a href="index.html">BIZYSOUND</a>
+          <a href="index.html">BIZY</a>
           <a href="https://music.163.com/#/artist?id=13681128" target="_blank" rel="noopener">听觉日记</a>
           <a href="ai-music.html">AI音乐</a>
 
@@ -37,7 +37,7 @@ export function renderNav() {
       <button class="mobile-menu-btn">MENU</button>
 
       <div class="mobile-menu-panel">
-        <a href="index.html">BIZYSOUND</a>
+        <a href="index.html">BIZY</a>
         <a href="https://music.163.com/#/artist?id=13681128" target="_blank" rel="noopener">听觉日记</a>
         <a href="ai-music.html">AI音乐</a>
         <a href="chordgen.html">和弦生成</a>

@@ -10,28 +10,48 @@
   --hard-shadow: 5px 5px 0px #000000;
 }
 
-/* ===== MIDI舞台 ===== */
-#noteContainerWrapper {
+
+/* 1. 最外层的卡片容器必须是 relative，充当 absolute 的定位参考系 */
+.visualizer-card {
+  position: relative !important;
   width: 85%;
   max-width: 1400px;
   height: 85vh;
   margin: 70px auto 40px;
-  overflow-x: auto;
-
-  /* 高街酸性材质：浅半透明 + 纯黑硬框 + 强黑阴影 */
+}
+/* ===== MIDI舞台 ===== */
+#noteContainerWrapper {
+  position: relative !important; /* 👈 必须是 relative，作为定位基准 */
+  overflow: hidden;              /* 👈 确保内部移动的音符不会超出白框 */
+  width: 100%;
+  max-width: 1400px;
+  height: 85vh;
+  margin: 70px auto 40px;
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: var(--acid-border);
-  border-radius: 0px;
   box-shadow: var(--hard-shadow);
-
-  transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
 }
 
 #noteContainer {
   position: relative;
   height: 100%;
+}
+
+/* 左上角实时和弦面板（相对 #noteContainerWrapper 定位） */
+#chordDisplay {
+  position: absolute !important;
+  top: 16px !important;
+  left: 16px !important;
+  z-index: 1000 !important; /* 确保盖在所有音符和画布上面 */
+  pointer-events: none;     /* 防止阻挡鼠标事件 */
+  
+  /* 你的黑色高亮外观样式 */
+  background: #000000;
+  color: #ccff00;
+  padding: 6px 12px;
+  font-family: monospace;
+  font-weight: bold;
 }
 
 /* ===== 录制模式 ===== */
@@ -383,3 +403,4 @@ input::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
