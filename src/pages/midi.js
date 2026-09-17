@@ -53,13 +53,31 @@ renderNav();
       </div>
     </div>
 
-    <!-- 🎮 底部播放器 -->
+        <!-- 🎮 底部播放器 -->
     <div class="player-bar" id="playerBar">
-      <button id="replayBtn">↺</button>
-      <button id="playBtn">▶</button>
-      <button id="resetBtn">⟲</button>
-      <button id="openPanelBtn">⚙</button>
+      <!-- 左侧控制按键 -->
+      <div class="player-controls">
+        <button id="replayBtn" title="重播">↺</button>
+        <button id="playBtn" title="播放/暂停">▶</button>
+        <button id="resetBtn" title="复位">⟲</button>
+      </div>
 
+      <!-- ⏱️ 中间时间进度条 (新增) -->
+      <div class="progress-wrapper">
+        <span class="time-text" id="currentTime">00:00</span>
+        <div class="progress-bar-container" id="progressBarContainer">
+          <div class="progress-rail">
+            <div class="progress-fill" id="progressFill"></div>
+            <div class="progress-thumb" id="progressThumb"></div>
+          </div>
+        </div>
+        <span class="time-text" id="totalTime">00:00</span>
+      </div>
+
+      <!-- 右侧设置按键 -->
+      <div class="player-actions">
+        <button id="openPanelBtn" title="设置">⚙</button>
+      </div>
     </div>
     
     <footer class="site-footer">

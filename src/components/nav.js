@@ -4,121 +4,47 @@ export function renderNav() {
   // 1. 检查是否已存在导航，防止重复渲染
   if (document.getElementById("nav")) return;
 
+  // 2. 插入导航 HTML
   document.body.insertAdjacentHTML("afterbegin", `
     <a href="/" class="site-logo"><span class="logo-text">BIZYSOUND</span></a>
     <nav class="nav" id="nav">
       <div class="nav-inner" id="navInner">
         <div class="nav-links">
+          <!-- ===== 桌面导航 ===== -->
+          <a href="index.html">BIZYSOUND</a>
+          <a href="https://music.163.com/#/artist?id=13681128" target="_blank" rel="noopener">听觉日记</a>
+          <a href="ai-music.html">AI音乐</a>
 
-  <!-- ===== 桌面导航 ===== -->
+          <div class="dropdown">
+            <a href="#" class="dropdown-trigger">创作工具</a>
+            <div class="dropdown-menu">
+              <a href="chordgen.html">和弦生成</a>
+              <a href="melodyimprov.html">旋律即兴</a>
+            </div>
+          </div>
 
-  <a href="index.html">BIZYSOUND</a>
+          <div class="dropdown">
+            <a href="#" class="dropdown-trigger">可视化</a>
+            <div class="dropdown-menu">
+              <a href="audioview.html">音频波形</a>
+              <a href="midiview.html">MIDI视图</a>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <a href="https://music.163.com/#/artist?id=13681128">
-    听觉日记
-  </a>
+      <!-- ===== 手机 MENU（放 nav-inner 外面） ===== -->
+      <button class="mobile-menu-btn">MENU</button>
 
-  <a href="ai-music.html">
-    AI音乐
-  </a>
-
-
-  <div class="dropdown">
-
-    <a href="#" class="dropdown-trigger">
-      创作工具
-    </a>
-
-    <div class="dropdown-menu">
-
-      <a href="chordgen.html">
-        和弦生成
-      </a>
-
-      <a href="melodyimprov.html">
-        旋律即兴
-      </a>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="dropdown">
-
-    <a href="#" class="dropdown-trigger">
-      可视化
-    </a>
-
-    <div class="dropdown-menu">
-
-      <a href="audioview.html">
-        音频波形
-      </a>
-
-      <a href="midiview.html">
-        MIDI视图
-      </a>
-
-    </div>
-
-  </div>
-
-
-</div>
-
-
-
-<!-- ===== 手机 MENU（放 nav-links 外面） ===== -->
-
-
-<button class="mobile-menu-btn">
-  MENU
-</button>
-
-
-
-<div class="mobile-menu-panel">
-
-
-  <a href="index.html">
-    BIZYSOUND
-  </a>
-
-
-  <a href="https://music.163.com/#/artist?id=13681128">
-    听觉日记
-  </a>
-
-
-  <a href="ai-music.html">
-    AI音乐
-  </a>
-
-
-  <a href="chordgen.html">
-    和弦生成
-  </a>
-
-
-  <a href="melodyimprov.html">
-    旋律即兴
-  </a>
-
-
-  <a href="audioview.html">
-    音频波形
-  </a>
-
-
-  <a href="midiview.html">
-    MIDI视图
-  </a>
-
-
-</div>
-      
+      <div class="mobile-menu-panel">
+        <a href="index.html">BIZYSOUND</a>
+        <a href="https://music.163.com/#/artist?id=13681128" target="_blank" rel="noopener">听觉日记</a>
+        <a href="ai-music.html">AI音乐</a>
+        <a href="chordgen.html">和弦生成</a>
+        <a href="melodyimprov.html">旋律即兴</a>
+        <a href="audioview.html">音频波形</a>
+        <a href="midiview.html">MIDI视图</a>
+      </div>
     </nav>
   `);
 
@@ -127,11 +53,13 @@ export function renderNav() {
 
   // ===== 滚动变色 =====
   window.addEventListener("scroll", () => {
-    nav.classList.toggle("scrolled", window.scrollY > 50);
+    if (nav) nav.classList.toggle("scrolled", window.scrollY > 50);
   });
 
-  // ===== GSAP 磁吸效果（比手动改 style 更平滑） =====
+  // ===== GSAP 磁吸效果（仅限桌面端，防止移动端误触偏位） =====
   document.addEventListener("mousemove", (e) => {
+    if (window.innerWidth <= 768 || !navInner) return;
+
     const rect = navInner.getBoundingClientRect();
     const x = e.clientX - (rect.left + rect.width / 2);
     const y = e.clientY - (rect.top + rect.height / 2);
@@ -142,39 +70,29 @@ export function renderNav() {
         x: x * 0.1,
         y: y * 0.1,
         duration: 0.5,
-        ease: "power2.out"
+        ease: "power2.out",
+        overwrite: "auto"
       });
     } else {
-      gsap.to(navInner, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
+      gsap.to(navInner, { 
+        x: 0, 
+        y: 0, 
+        duration: 0.5, 
+        ease: "elastic.out(1, 0.3)",
+        overwrite: "auto"
+      });
     }
   });
 
-  
-// ===== 手机菜单 =====
+  // ===== 手机菜单交互（采用全局事件委托，保证 100% 能触发） =====
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".mobile-menu-btn");
+    if (!btn) return;
 
-const menuBtn = document.querySelector(".mobile-menu-btn");
-const menuPanel = document.querySelector(".mobile-menu-panel");
-
-
-if(menuBtn && menuPanel){
-
-  menuBtn.addEventListener("click",()=>{
-
-    menuPanel.classList.toggle("active");
-
-
-    if(menuPanel.classList.contains("active")){
-
-      menuBtn.textContent="CLOSE";
-
-    }else{
-
-      menuBtn.textContent="MENU";
-
+    const panel = document.querySelector(".mobile-menu-panel");
+    if (panel) {
+      panel.classList.toggle("active");
+      btn.textContent = panel.classList.contains("active") ? "CLOSE" : "MENU";
     }
-
-
   });
-
-}
 }

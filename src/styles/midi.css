@@ -1,5 +1,14 @@
-/* ===== 全局 ===== */
+/* ==========================================
+   BIZYSOUND - High-Street Acid Theme (硬件采样器胶囊)
+   ========================================== */
 
+/* ===== 全局变量定义 ===== */
+:root {
+  --acid-lime: #ccff00;
+  --acid-black: #000000;
+  --acid-border: 2.5px solid #000000;
+  --hard-shadow: 5px 5px 0px #000000;
+}
 
 /* ===== MIDI舞台 ===== */
 #noteContainerWrapper {
@@ -8,44 +17,37 @@
   height: 85vh;
   margin: 70px auto 40px;
   overflow-x: auto;
-  
-  /* 默认玻璃样式 */
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px); 
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  
-  /* 只有这个框在变色时有 0.5s 的过渡 */
-  transition: background 0.5s ease, border 0.5s ease, box-shadow 0.5s ease;
-}
 
+  /* 高街酸性材质：浅半透明 + 纯黑硬框 + 强黑阴影 */
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: var(--acid-border);
+  border-radius: 0px;
+  box-shadow: var(--hard-shadow);
+
+  transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
+}
 
 #noteContainer {
   position: relative;
   height: 100%;
 }
 
-/* ===== 录制模式 (当 body 有 .recording-mode 时生效) ===== */
-
-/* 1. 舞台变白 */
+/* ===== 录制模式 ===== */
 body.recording-mode #noteContainerWrapper {
-  background: #ffffff !important;   
-  border-color: transparent !important;
-  box-shadow: none !important;
+  background: #ffffff !important;
+  border-color: #000000 !important;
+  box-shadow: 8px 8px 0px #000000 !important;
   backdrop-filter: none !important;
 }
 
-
-
-/* 3. 录制模式下强制隐藏面板 (双重保险) */
 body.recording-mode .panel {
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
-/* ===== 播放线   没用到！ ===== */
+/* ===== 播放线 ===== */
 #playhead {
   position: absolute;
   width: 2px;
@@ -54,9 +56,7 @@ body.recording-mode .panel {
   box-shadow: 0 0 6px #00e0ff;
 }
 
-/* ===== 音符 ===== */
-
-
+/* ===== 音符（完全保留原版样式） ===== */
 .note {
   position: absolute;
   height: 6px;
@@ -70,14 +70,13 @@ body.recording-mode .panel {
   background-color: #000;
 }
 
-
 .note.active.glow {
   box-shadow: 
     0 0 8px #00e0ff,
     0 0 18px rgba(0,224,255,0.5);
 }
 
-/* ===== 粒子 ===== */
+/* ===== 粒子（完全保留原版样式） ===== */
 .particle {
   width: 3px;
   height: 3px;
@@ -94,6 +93,7 @@ body.recording-mode .panel {
     opacity: 0;
   }
 }
+
 /* ===== 核心控制面板 ===== */
 .panel {
   position: fixed;
@@ -102,309 +102,284 @@ body.recording-mode .panel {
   transform: translate(-50%, -50%) scale(1);
   z-index: 100;
   width: 400px;
-  padding: 24px; /* 面板通常比导航栏需要更大的内边距 */
-  
-  /* ===== 移植的高级玻璃视觉 ===== */
-  background: rgba(255, 255, 255, 0.08); 
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px); /* 兼容 Safari */
-  
-  /* 边缘高光与阴影 */
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-  
-  /* 圆角与动画 */
-  border-radius: 16px; /* 面板稍大，16px 的圆角比导航栏的 12px 更协调 */
-  /* transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 加了一个更丝滑的缓动曲线 */
-  visibility: hidden; 
+  padding: 24px;
+
+  /* 高街质感：白底 + 纯黑硬框 + 硬边深阴影 */
+  background: #ffffff;
+  border: var(--acid-border);
+  box-shadow: 8px 8px 0px var(--acid-black);
+  border-radius: 0px;
+
+  visibility: hidden;
   opacity: 0;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* ===== 移植面板的高级内侧打光 ===== */
 .panel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit; /* 自动继承父级的 16px 圆角 */
-  background: linear-gradient(
-    120deg,
-    rgba(79, 153, 196, 0.25),
-    rgba(255, 255, 255, 0.05)
-  );
-  pointer-events: none; /* 防止遮挡面板内部按钮的点击 */
+  display: none;
 }
 
-/* .panel.hidden {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.95);
-  pointer-events: none;
-} */
- .panel.hidden,
+.panel.hidden,
 body.recording-mode .panel {
   opacity: 0 !important;
-  visibility: hidden !important; /* 彻底从渲染树隐藏，防止挡住点击 */
+  visibility: hidden !important;
   pointer-events: none !important;
-  
-  /* 允许消失时有一个微小的缩放 */
-  transform: translate(-50%, -50%) scale(0.9) !important;
-  transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s !important;
+  transform: translate(-50%, -50%) scale(0.95) !important;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s !important;
 }
 
 /* ===== 行布局 ===== */
-  .row {
+.row {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
   width: 100%;
-  }
-  /* 固定左侧标签宽度 */
-  .row label {
-    flex-shrink: 0;
-    width: 70px;
-    font-size: 13px;
-    color: rgb(0, 0, 0);
-    font-weight: 500;
-  }
+}
 
-    /* --- 第一行特殊处理：缩短 label 宽度防止换行 --- */
-  .row.compact-row label {
-    width: 83px; 
-  }
-
-  .row.compact-row label:nth-of-type(2) {
-    margin-left: 40px; /* 给两个组之间留点空隙 */
-  }
-  /* 中间控件伸缩 */
-  .row input[type="range"] {
-    flex: 1;
-    margin: 0 15px;
-    font-size: 13px;
-  }
-
-  /* 限制数字输入框的宽度 */
-  .row input[type="number"] {
-    flex: 1;             /* 自动填充剩余空间 */
-    max-width: 70px;     /* 核心：防止 input 过宽 */
-    background: rgb(96, 96, 96);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
-    padding: 6px;
-    border-radius: 6px;
-    text-align: center;
-    outline: none;
-  }
-
-
-/* 右侧数值固定宽度，防止跳动 */
-.val-num {
-  width: 20px;
-  text-align: right;
+.row label {
+  flex-shrink: 0;
+  width: 80px;
   font-size: 12px;
-  color: rgb(0, 0, 0);
-}
-
-
-
-
-/* ===== 输入 ===== */
-input {
-  background: #111;
-  border: 1px solid #333;
-  color: #fff;
-  border-radius: 6px;
-  padding: 4px 6px;
-  cursor: text;
-}
-
-/* ===== 底部播放器 ===== */
-.player-bar {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  
-  background: rgba(100, 100, 100, 0.5);
-  backdrop-filter: blur(20px);
-  
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 18px;
-  
-  padding: 10px 18px;
-  
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  
-  z-index: 200;
-}
-/* ===== 核心 UI 按钮 (适配磨砂玻璃风格) ===== */
-button {
-  /* 基础材质：半透明深色 */
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  
-  /* 边框：极其细微的高光边 */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  
-  padding: 8px 16px; /* 稍微增加一点内边距，更有呼吸感 */
-  border-radius: 10px; /* 圆角稍微圆润一点点，配合面板 */
-  cursor: pointer;
-  
-  /* 动画：使用更优雅的缓动 */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 14px;
+  color: #000;
+  font-weight: 900;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-button:hover {
-  /* 悬停：背景加深，文字变亮，向上微动 */
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+.row.compact-row label {
+  width: 85px;
 }
 
-button:active {
-  /* 点击：回弹效果 */
-  transform: translateY(0);
-}
-/* 👉 播放按钮：冷灰铝合金质感 (纯净黑白灰) */
-#playBtn {
-  /* 基础：深灰半透明，像磨砂金属 */
-  background: rgba(45, 45, 45, 0.5); 
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  
-  /* 边框：纯白的极细微光边，模拟金属切边 */
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  
-  /* 图标：纯白色，带一点点光晕 */
-  color: #ffffff;
-  
-  /* 阴影：深色的自然阴影 */
-  box-shadow: 
-    0 4px 15px rgba(0, 0, 0, 0.2),
-    inset 0 0 1px rgba(255, 255, 255, 0.1);
-  
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+.row.compact-row label:nth-of-type(2) {
+  margin-left: 20px;
 }
 
-#playBtn:hover {
-  /* 悬停时：整体稍微提亮，呈现银色质感 */
-  background: rgba(70, 70, 70, 0.7);
-  border-color: rgba(255, 255, 255, 0.5);
-  color: #fff;
-  
-  /* 增强白色发光感，显得更“干净” */
-  box-shadow: 
-    0 6px 20px rgba(0, 0, 0, 0.25),
-    0 0 10px rgba(255, 255, 255, 0.1);
-  transform: translateY(-1px);
+.row input[type="range"] {
+  flex: 1;
+  margin: 0 15px;
+  accent-color: #000;
 }
 
-#playBtn:active {
-  background: rgba(30, 30, 30, 0.9);
-  transform: translateY(0) scale(0.97);
+.row input[type="number"] {
+  flex: 1;
+  max-width: 70px;
+  background: #fff;
+  border: var(--acid-border);
+  color: #000;
+  padding: 6px;
+  border-radius: 0px;
+  text-align: center;
+  font-weight: 900;
+  outline: none;
 }
 
+.row input[type="number"]:focus {
+  background: var(--acid-lime);
+}
 
-
-/* ===== 开关 ===== */
-.toggle {
+.val-num {
+  width: 24px;
+  text-align: right;
   font-size: 12px;
-  opacity: 0.8;
+  font-weight: 900;
+  color: #000;
+  font-family: monospace;
 }
 
-
-/* ===== 上传midicss ===== */
-/* ===== 上传区域优化 ===== */
+/* ===== 上传区域 ===== */
 .upload-line {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: space-between; /* 建议换成这个，让文字分别靠在两头 */
-  width: 100%; /* 让它撑满面板宽度 */
-  box-sizing: border-box; /* 防止宽度撑破面板 */
-  
-  padding: 10px 14px;
-  border-radius: 10px;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border-radius: 0px;
 
-  /* 👈 加深后的背景色：使用更纯的深色，降低透明度 */
-  background: rgb(0, 0, 0); 
-  border: 1px solid rgba(255, 255, 255, 0.12);
-
-  font-size: 14px;
+  background: #000;
+  border: var(--acid-border);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
   cursor: pointer;
   margin-bottom: 20px;
-  transition: all 0.3s ease;
+  box-shadow: 4px 4px 0px var(--acid-lime);
+  transition: all 0.15s ease;
 }
 
 .upload-line:hover {
-  /* 悬停时：不要青色背景，改为边框提亮 */
-  background: rgba(30, 30, 30, 0.8);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--acid-lime);
 }
 
 #uploadText {
-  color: rgba(255, 255, 255, 0.5); /* 提示文字稍微暗一点 */
+  color: var(--acid-lime);
 }
 
 #fileName {
-  color: #ffffff;
-  font-weight: 500;
-  /* 增加一个超过长度自动省略的效果，防止文件名太长撑开面板 */
-  max-width: 150px;
+  color: #fff;
+  font-weight: 700;
+  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* ===== 底部播放器：收拢悬浮硬件胶囊 ===== */
+.player-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
 
-/* 1. 定义滚动条整体宽度和高度（横向滚动看高度） */
+  background: #ffffff;
+  border: var(--acid-border);
+  box-shadow: 6px 6px 0px #000000;
+  border-radius: 0px;
+  
+  width: auto;
+  min-width: 520px;
+}
+
+.player-controls, .player-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===== ⏱️ 采样器屏幕式进度条 (LCD 屏) ===== */
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  background: #111111;
+  padding: 6px 10px;
+  border: 1.5px solid #000;
+}
+
+.time-text {
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--acid-lime);
+  min-width: 38px;
+  text-align: center;
+  user-select: none;
+}
+
+.progress-bar-container {
+  flex: 1;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress-rail {
+  width: 100%;
+  height: 4px;
+  background: #333333;
+  border-radius: 0px;
+  position: relative;
+}
+
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  background: var(--acid-lime);
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.progress-thumb {
+  position: absolute;
+  left: 0%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 12px;
+  background: #ffffff;
+  border: 1px solid #000;
+  pointer-events: none;
+}
+
+/* ===== 按钮样式：采样器物理 Pads ===== */
+button {
+  background: #ffffff;
+  border: 2px solid #000000;
+  color: #000000;
+  padding: 6px 12px;
+  font-weight: 900;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #000000;
+  transition: all 0.1s ease;
+  border-radius: 0px;
+  text-transform: uppercase;
+}
+
+button:hover {
+  background: var(--acid-lime);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #000000;
+}
+
+button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 0px 0px 0px #000000;
+}
+
+#playBtn {
+  background: #000000;
+  color: var(--acid-lime);
+  border: 2px solid #000000;
+  box-shadow: 2px 2px 0px var(--acid-lime);
+  padding: 6px 16px;
+}
+
+#playBtn:hover {
+  background: var(--acid-lime);
+  color: #000000;
+  box-shadow: 3px 3px 0px #000000;
+}
+
+/* ===== 滚动条 ===== */
 #noteContainerWrapper::-webkit-scrollbar {
-  width: 6px;  /* 纵向滚动条宽度 */
-  height: 6px; /* 横向滚动条高度 */
+  width: 8px;
+  height: 8px;
 }
 
-/* 2. 定义滚动条轨道（背景） */
 #noteContainerWrapper::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05); /* 极淡的透明背景 */
-  border-radius: 10px;
+  background: #e0e0e0;
+  border-top: 2px solid #000;
 }
 
-/* 3. 定义滑块（那个动的部分） */
 #noteContainerWrapper::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2); /* 半透明白 */
-  backdrop-filter: blur(4px);          /* 也可以加点模糊 */
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: background 0.3s ease;
+  background: #000;
+  border-radius: 0px;
 }
 
-/* 4. 鼠标悬停时滑块变亮一点 */
 #noteContainerWrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--acid-lime);
 }
 
-#noteContainerWrapper::-webkit-scrollbar-corner {
-  background: rgba(255, 255, 255, 0.05); /* 和你自定义的轨道颜色一样 */
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-}
-
-
-
-/* --- 移除 Chrome, Safari, Edge, Opera 的调节箭头 --- */
+/* 数字输入框修饰 */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* --- 移除 Firefox 的调节箭头 --- */
 input[type="number"] {
   -moz-appearance: textfield;
 }

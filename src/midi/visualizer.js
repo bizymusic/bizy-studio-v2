@@ -1,349 +1,427 @@
 import { Midi } from "https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/+esm";
 import { createParticleSystem } from "./particles.js";
 
-
 export function initVisualizer() {
+  // ===== 粒子开关 =====
+  const particleToggle = document.getElementById("particleToggle");
+  let enableParticles = false;
 
+  if (particleToggle) {
+    particleToggle.addEventListener("change", () => {
+      enableParticles = particleToggle.checked;
+    });
+  }
+
+  // ===== DOM =====
+  const fileInput = document.getElementById("fileInput");
+  const bpmInput = document.getElementById("bpmInput");
+
+  const scaleSlider = document.getElementById("scaleSlider");
+  const scaleValue = document.getElementById("scaleValue");
+  const verticalSlider = document.getElementById("verticalSlider");
+  const verticalValue = document.getElementById("verticalValue");
+  const highlightInput = document.getElementById("highlightInput");
+  const resetBtn = document.getElementById("resetBtn");
+  const replayBtn = document.getElementById("replayBtn");
+  const playBtn = document.getElementById("playBtn");
+  const panel = document.getElementById("controlPanel");
+  const openPanelBtn = document.getElementById("openPanelBtn");
+  const containerWrapper = document.getElementById("noteContainerWrapper");
+  const container = document.getElementById("noteContainer");
+  const particleSystem = createParticleSystem(container);
+
+  // ⏱️ 时间与进度条 DOM (新增)
+  const currentTimeEl = document.getElementById("currentTime");
+  const totalTimeEl = document.getElementById("totalTime");
+  const progressFill = document.getElementById("progressFill");
+  const progressThumb = document.getElementById("progressThumb");
+  const progressBarContainer = document.getElementById("progressBarContainer");
+
+  // ===== 面板切换 =====
+  if (openPanelBtn) {
+    openPanelBtn.addEventListener("click", () => {
+      panel.classList.toggle("hidden");
+    });
+  }
+
+  // ===== 状态 =====
+  let midiData = null;
+  let allNotes = [];
+  let noteElements = [];
+  let pixelsPerSecond = parseInt(scaleSlider.value);
+  let noteSpacing = parseInt(verticalSlider.value);
+  const noteHeight = 6;
+  let customBpm = null;
+
+  let originalBpm = 120;
+  let tempoFactor = 1;
+  let totalDuration = 0;
+  let animationStartTime = null;
+  let playbackTime = 0;
+  let animationFrame = null;
+  let paused = false;
+  let playbackEnded = false;
+  let hasStarted = false;
+  let lastFrameTime = 0;
+  let isDraggingProgress = false; // 是否正在拖拽进度条
+
+  // ===== ⏱️ 辅助：时间格式化 =====
+  function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return "00:00";
+    const min = Math.floor(seconds / 60);
+    const sec = Math.floor(seconds % 60);
+    return `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+  }
+
+  // ===== ⏱️ 辅助：更新时间栏UI =====
+  function updateTimeUI(time) {
+    if (!totalDuration) return;
+    const clampedTime = Math.min(Math.max(0, time), totalDuration);
+    const percent = (clampedTime / totalDuration) * 100;
+
+    if (currentTimeEl) currentTimeEl.textContent = formatTime(clampedTime);
+    if (progressFill) progressFill.style.width = `${percent}%`;
+    if (progressThumb) progressThumb.style.left = `${percent}%`;
+  }
+
+  // ===== ⏱️ 辅助：跳转到指定时间 (Seek) =====
+  function seekToTime(targetTime) {
+    playbackTime = Math.min(Math.max(0, targetTime), totalDuration);
+    animationStartTime = performance.now() - (playbackTime / tempoFactor) * 1000;
     
+    // 立即滚动画面并渲染音符状态
+    const position = playbackTime * pixelsPerSecond;
+    if (containerWrapper) containerWrapper.scrollLeft = position;
+    updateTimeUI(playbackTime);
+    renderNoteState(playbackTime);
+  }
 
-// ===== 粒子开关 =====
-const particleToggle = document.getElementById("particleToggle");
-let enableParticles = false;
+  // ===== 高亮时间 =====
+  let minHighlightTime = 0.2;
+  highlightInput.value = minHighlightTime;
 
-if (particleToggle) {
-particleToggle.addEventListener("change", () => {
-    enableParticles = particleToggle.checked;
-});
-}
+  highlightInput.addEventListener("input", () => {
+    const val = parseFloat(highlightInput.value);
+    if (!isNaN(val) && val > 0) {
+      minHighlightTime = val;
+    }
+  });
 
-// ===== DOM =====
-const fileInput = document.getElementById("fileInput");
-const bpmInput = document.getElementById("bpmInput");
+  // ===== 控件 =====
+  scaleSlider.addEventListener("input", () => {
+    pixelsPerSecond = parseInt(scaleSlider.value);
+    scaleValue.textContent = pixelsPerSecond;
 
-const scaleSlider = document.getElementById("scaleSlider");
-const scaleValue = document.getElementById("scaleValue");
-const verticalSlider = document.getElementById("verticalSlider");
-const verticalValue = document.getElementById("verticalValue");
-const highlightInput = document.getElementById("highlightInput");
-const resetBtn = document.getElementById("resetBtn");
-const replayBtn = document.getElementById("replayBtn");
-const playBtn = document.getElementById("playBtn");
-const panel = document.getElementById("controlPanel");
-const openPanelBtn = document.getElementById("openPanelBtn");
-const containerWrapper = document.getElementById("noteContainerWrapper");
-const container = document.getElementById("noteContainer");
-const particleSystem = createParticleSystem(container);
+    if (hasStarted && !paused) {
+      animationStartTime = performance.now() - (playbackTime / tempoFactor) * 1000;
+    }
 
-// ===== 面板切换 =====
-if (openPanelBtn) {
-openPanelBtn.addEventListener("click", () => {
-    panel.classList.toggle("hidden");
-    
-});
-}
+    if (noteElements.length > 0) rescaleNotes();
+  });
 
-// ===== 状态 =====
-let midiData = null;
-let allNotes = [];
-let noteElements = [];
-let pixelsPerSecond = parseInt(scaleSlider.value);
-let noteSpacing = parseInt(verticalSlider.value);
-const noteHeight = 6;
-let customBpm = null;
+  verticalSlider.addEventListener("input", () => {
+    noteSpacing = parseInt(verticalSlider.value);
+    verticalValue.textContent = noteSpacing;
 
-let originalBpm = 120;
-let tempoFactor = 1;
-let totalDuration = 0;
-let animationStartTime = null;
-let playbackTime = 0;
-let animationFrame = null;
-let paused = false;
-let playbackEnded = false;
-let hasStarted = false;
-let lastFrameTime = 0;
+    if (noteElements.length > 0) rescaleNotes();
+  });
 
-// ===== 高亮时间 =====
-let minHighlightTime = 0.20;
-highlightInput.value = minHighlightTime;
+  // ===== ⏱️ 进度条交互 (点击 & 拖拽跳转) =====
+  if (progressBarContainer) {
+    const handleProgressScrub = (e) => {
+      if (!midiData || !totalDuration) return;
+      const rect = progressBarContainer.getBoundingClientRect();
+      const offsetX = Math.min(Math.max(0, e.clientX - rect.left), rect.width);
+      const ratio = offsetX / rect.width;
+      seekToTime(ratio * totalDuration);
+    };
 
-highlightInput.addEventListener("input", () => {
-const val = parseFloat(highlightInput.value);
-if (!isNaN(val) && val > 0) {
-    minHighlightTime = val;
-}
-});
+    progressBarContainer.addEventListener("mousedown", (e) => {
+      isDraggingProgress = true;
+      handleProgressScrub(e);
+    });
 
-// ===== 控件 =====
-scaleSlider.addEventListener("input", () => {
-pixelsPerSecond = parseInt(scaleSlider.value);
-scaleValue.textContent = pixelsPerSecond;
+    window.addEventListener("mousemove", (e) => {
+      if (isDraggingProgress) handleProgressScrub(e);
+    });
 
-if (hasStarted && !paused) {
-    animationStartTime = performance.now() - playbackTime / tempoFactor * 1000;
-}
+    window.addEventListener("mouseup", () => {
+      isDraggingProgress = false;
+    });
 
-if (noteElements.length > 0) rescaleNotes();
-});
+    // 移动端 Touch 支持
+    progressBarContainer.addEventListener("touchstart", (e) => {
+      isDraggingProgress = true;
+      handleProgressScrub(e.touches[0]);
+    });
+    window.addEventListener("touchmove", (e) => {
+      if (isDraggingProgress) handleProgressScrub(e.touches[0]);
+    });
+    window.addEventListener("touchend", () => {
+      isDraggingProgress = false;
+    });
+  }
 
-verticalSlider.addEventListener("input", () => {
-noteSpacing = parseInt(verticalSlider.value);
-verticalValue.textContent = noteSpacing;
+  // ===== 文件加载 =====
+  const uploadLine = document.getElementById("uploadLine");
+  const fileName = document.getElementById("fileName");
 
-if (noteElements.length > 0) rescaleNotes();
-});
+  uploadLine.addEventListener("click", () => {
+    fileInput.click();
+  });
 
-// ===== 文件加载 =====
-const uploadLine = document.getElementById("uploadLine");
-const fileName = document.getElementById("fileName");
+  uploadLine.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    uploadLine.classList.add("dragover");
+  });
 
-// 点击选择
-uploadLine.addEventListener("click", () => {
-fileInput.click();
-});
+  uploadLine.addEventListener("dragleave", () => {
+    uploadLine.classList.remove("dragover");
+  });
 
-// 拖拽
-uploadLine.addEventListener("dragover", (e) => {
-e.preventDefault();
-uploadLine.classList.add("dragover");
-});
+  uploadLine.addEventListener("drop", (e) => {
+    e.preventDefault();
+    uploadLine.classList.remove("dragover");
+    const file = e.dataTransfer.files[0];
+    handleFile(file);
+  });
 
-uploadLine.addEventListener("dragleave", () => {
-uploadLine.classList.remove("dragover");
-});
+  fileInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    handleFile(file);
+  });
 
-uploadLine.addEventListener("drop", (e) => {
-e.preventDefault();
-uploadLine.classList.remove("dragover");
-
-const file = e.dataTransfer.files[0];
-handleFile(file);
-});
-
-// 选择文件
-fileInput.addEventListener("change", (e) => {
-const file = e.target.files[0];
-handleFile(file);
-});
-
-// 统一处理
-async function handleFile(file) {
+  async function handleFile(file) {
     if (!file) return;
     fileName.textContent = file.name;
     try {
-        const arrayBuffer = await file.arrayBuffer();
-        midiData = new Midi(arrayBuffer);
+      const arrayBuffer = await file.arrayBuffer();
+      midiData = new Midi(arrayBuffer);
 
-        // --- 优化点：自动读取并显示 BPM ---
-        const detectedBpm = Math.round(midiData.header.tempos?.[0]?.bpm || 120);
-        bpmInput.value = detectedBpm; 
-        customBpm = detectedBpm; 
-        // -------------------------------
+      const detectedBpm = Math.round(midiData.header.tempos?.[0]?.bpm || 120);
+      bpmInput.value = detectedBpm;
+      customBpm = detectedBpm;
 
-        buildVisualizer();
+      buildVisualizer();
     } catch (err) {
-        console.error(err);
-        alert("❌ MIDI 解析失败");
+      console.error(err);
+      alert("❌ MIDI 解析失败");
     }
-}
+  }
 
+  // ===== 播放控制 =====
+  playBtn.addEventListener("click", () => {
+    if (!midiData) return;
 
-
-// ===== 播放控制（合并版）=====
-playBtn.addEventListener("click", () => {
-if (!midiData) return;
-// --- 新增：播放前最后确认一次 BPM ---
     const currentBpmInput = parseFloat(bpmInput.value);
     if (!isNaN(currentBpmInput) && currentBpmInput > 0 && currentBpmInput !== customBpm) {
-        customBpm = currentBpmInput;
-        buildVisualizer(); // 如果 BPM 变了，重新计算所有音符位置
+      customBpm = currentBpmInput;
+      buildVisualizer();
     }
-    // ----------------------------------
-if (!hasStarted) {
-    hasStarted = true;
+
+    if (!hasStarted) {
+      hasStarted = true;
+      paused = false;
+      playbackTime = 0;
+      animationStartTime = performance.now();
+      requestAnimationFrame(animate);
+
+      playBtn.textContent = "⏸";
+      panel.classList.add("hidden");
+      document.body.classList.add("recording-mode");
+      return;
+    }
+
+    paused = !paused;
+
+    if (!paused) {
+      animationStartTime = performance.now() - (playbackTime / tempoFactor) * 1000;
+      requestAnimationFrame(animate);
+      playBtn.textContent = "⏸";
+      panel.classList.add("hidden");
+      document.body.classList.add("recording-mode");
+    } else {
+      playBtn.textContent = "▶";
+      panel.classList.remove("hidden");
+      document.body.classList.remove("recording-mode");
+    }
+  });
+
+  // ===== 重置 =====
+  resetBtn.addEventListener("click", () => {
+    cancelAnimationFrame(animationFrame);
+
+    midiData = null;
+    allNotes = [];
+    noteElements = [];
+    customBpm = null;
+    hasStarted = false;
     paused = false;
     playbackTime = 0;
-    animationStartTime = performance.now();
-    requestAnimationFrame(animate);
+    totalDuration = 0;
 
-    playBtn.textContent = "⏸";
-    panel.classList.add("hidden");
-    document.body.classList.add("recording-mode");
-    return;
-}
+    fileInput.value = "";
+    bpmInput.value = "";
 
-paused = !paused;
+    containerWrapper.scrollLeft = 0;
+    container.innerHTML = "";
 
-if (!paused) {
-    animationStartTime = performance.now() - playbackTime / tempoFactor * 1000;
-    requestAnimationFrame(animate);
-    playBtn.textContent = "⏸";
-    panel.classList.add("hidden");
-    document.body.classList.add("recording-mode");
-} else {
     playBtn.textContent = "▶";
     panel.classList.remove("hidden");
     document.body.classList.remove("recording-mode");
-}
-});
 
-// ===== 重置 =====
-resetBtn.addEventListener("click", () => {
-cancelAnimationFrame(animationFrame);
+    // 重置时间 display
+    if (currentTimeEl) currentTimeEl.textContent = "00:00";
+    if (totalTimeEl) totalTimeEl.textContent = "00:00";
+    if (progressFill) progressFill.style.width = "0%";
+    if (progressThumb) progressThumb.style.left = "0%";
+  });
 
-midiData = null;
-allNotes = [];
-noteElements = [];
-customBpm = null;
-hasStarted = false;
-paused = false;
-playbackTime = 0;
+  // ===== 重播 =====
+  replayBtn.addEventListener("click", () => {
+    if (!midiData) return;
 
-fileInput.value = "";
-bpmInput.value = "";
+    cancelAnimationFrame(animationFrame);
 
-containerWrapper.scrollLeft = 0;
-container.innerHTML = "";
+    paused = false;
+    playbackTime = 0;
+    hasStarted = true;
+    animationStartTime = performance.now();
+    playbackEnded = false;
 
-playBtn.textContent = "▶";
-panel.classList.remove("hidden");
-document.body.classList.remove("recording-mode");
-});
+    playBtn.textContent = "⏸";
+    panel.classList.add("hidden");
 
-// ===== 重播 =====
-replayBtn.addEventListener("click", () => {
-if (!midiData) return;
+    requestAnimationFrame(animate);
+    document.body.classList.add("recording-mode");
+  });
 
-cancelAnimationFrame(animationFrame);
+  // ===== 构建 =====
+  function buildVisualizer() {
+    cancelAnimationFrame(animationFrame);
 
-paused = false;
-playbackTime = 0;
-hasStarted = true;
-animationStartTime = performance.now();
-playbackEnded = false;
+    container.innerHTML = "";
+    allNotes = [];
+    noteElements = [];
+    hasStarted = false;
+    paused = false;
+    playbackTime = 0;
 
-playBtn.textContent = "⏸";
-panel.classList.add("hidden");
+    originalBpm = midiData.header.tempos?.[0]?.bpm || 120;
+    const bpm = customBpm || originalBpm;
+    tempoFactor = bpm / originalBpm;
 
-requestAnimationFrame(animate);
-document.body.classList.add("recording-mode");
-});
+    midiData.tracks.forEach((track) => {
+      if (track.notes) allNotes = allNotes.concat(track.notes);
+    });
 
-// ===== 构建 =====
-function buildVisualizer() {
-cancelAnimationFrame(animationFrame);
+    if (allNotes.length === 0) {
+      alert("⚠️ 没有音符");
+      return;
+    }
 
-container.innerHTML = "";
-allNotes = [];
-noteElements = [];
-hasStarted = false;
-paused = false;
-playbackTime = 0;
+    allNotes.sort((a, b) => a.time - b.time);
 
-originalBpm = midiData.header.tempos?.[0]?.bpm || 120;
-const bpm = customBpm || originalBpm;
-tempoFactor = bpm / originalBpm;
+    totalDuration = Math.max(...allNotes.map((n) => n.time + n.duration));
 
-midiData.tracks.forEach(track => {
-    if (track.notes) allNotes = allNotes.concat(track.notes);
-});
+    // ⏱️ 设置总时间 UI
+    if (totalTimeEl) totalTimeEl.textContent = formatTime(totalDuration);
+    updateTimeUI(0);
 
-if (allNotes.length === 0) {
-    alert("⚠️ 没有音符");
-    return;
-}
+    const halfWidth = containerWrapper.clientWidth / 2;
+    container.style.marginLeft = `${halfWidth}px`;
+    container.style.marginRight = `${halfWidth}px`;
+    container.style.width = `${totalDuration * pixelsPerSecond}px`;
 
-allNotes.sort((a, b) => a.time - b.time);
+    allNotes.forEach((note) => {
+      const div = document.createElement("div");
+      div.className = "note";
+      container.appendChild(div);
+      noteElements.push({ div, note });
+    });
 
-totalDuration = Math.max(...allNotes.map(n => n.time + n.duration));
+    rescaleNotes();
+  }
 
-const halfWidth = containerWrapper.clientWidth / 2;
-container.style.marginLeft = `${halfWidth}px`;  // 将0秒的位置推到屏幕正中间
-container.style.marginRight = `${halfWidth}px`; // 让最后一颗音符播放完时也能停在正中间
-container.style.width = `${totalDuration * pixelsPerSecond}px`;
+  // ===== 布局 =====
+  function rescaleNotes() {
+    noteElements.forEach(({ div, note }) => {
+      div.style.left = `${note.time * pixelsPerSecond}px`;
+      div.style.width = `${Math.max(note.duration * pixelsPerSecond, 2)}px`;
+      div.style.top = `${(127 - note.midi) * noteSpacing}px`;
+      div.style.height = `${noteHeight}px`;
+    });
+  }
 
-allNotes.forEach(note => {
-    const div = document.createElement("div");
-    div.className = "note";
-    container.appendChild(div);
-    noteElements.push({ div, note });
-});
+  // ===== 音符高亮/粒子绘制辅助逻辑 =====
+  function renderNoteState(curTime, timestamp = performance.now()) {
+    noteElements.forEach(({ div, note }) => {
+      const start = note.time;
+      const end = start + Math.max(note.duration, minHighlightTime);
 
-rescaleNotes();
-}
+      if (curTime >= start && curTime < end) {
+        div.classList.add("active");
 
-// ===== 布局 =====
-function rescaleNotes() {
-noteElements.forEach(({ div, note }) => {
-    div.style.left = `${note.time * pixelsPerSecond}px`;
-    div.style.width = `${Math.max(note.duration * pixelsPerSecond, 2)}px`;
-    div.style.top = `${(127 - note.midi) * noteSpacing}px`;
-    div.style.height = `${noteHeight}px`;
-});
-}
+        if (enableParticles) {
+          div.classList.add("glow");
 
+          if (!div._lastParticle || timestamp - div._lastParticle > 120) {
+            const rect = div.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
 
+            const x = rect.left - containerRect.left + rect.width / 2;
+            const y = rect.top - containerRect.top + rect.height / 2;
 
-// ===== 动画 =====
-function animate(timestamp) {
-if (paused) return;
+            particleSystem.spawn(x, y);
+            div._lastParticle = timestamp;
+          }
+        } else {
+          div.classList.remove("glow");
+        }
+      } else {
+        div.classList.remove("active");
+        div.classList.remove("glow");
+      }
+    });
+  }
 
-if (!animationStartTime) animationStartTime = timestamp;
+  // ===== 动画主循环 =====
+  function animate(timestamp) {
+    if (paused) return;
 
-const delta = (timestamp - (lastFrameTime || timestamp)) / 1000;
-lastFrameTime = timestamp;
+    if (!animationStartTime) animationStartTime = timestamp;
 
-playbackTime = (timestamp - animationStartTime) / 1000 * tempoFactor;
-const position = playbackTime * pixelsPerSecond;
+    const delta = (timestamp - (lastFrameTime || timestamp)) / 1000;
+    lastFrameTime = timestamp;
 
-// 因为左侧已经有了 marginLeft 作为缓冲，直接等于 position 即可
-containerWrapper.scrollLeft = position;
+    // 拖拽进度条时暂停自动累加时间，避免与鼠标冲突
+    if (!isDraggingProgress) {
+      playbackTime = ((timestamp - animationStartTime) / 1000) * tempoFactor;
+      const position = playbackTime * pixelsPerSecond;
+      containerWrapper.scrollLeft = position;
 
-noteElements.forEach(({ div, note }) => {
-    const start = note.time;
-    const end = start + Math.max(note.duration, minHighlightTime);
+      // ⏱️ 逐帧更新时间数字和进度条 Fill
+      updateTimeUI(playbackTime);
+    }
 
-    if (playbackTime >= start && playbackTime < end) {
-    div.classList.add("active");
+    // 渲染音符与粒子
+    renderNoteState(playbackTime, timestamp);
 
     if (enableParticles) {
-        div.classList.add("glow");
-
-        if (!div._lastParticle || timestamp - div._lastParticle > 120) {
-        const rect = div.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-
-        const x = rect.left - containerRect.left + rect.width / 2;
-        const y = rect.top - containerRect.top + rect.height / 2;
-
-        particleSystem.spawn(x, y);
-        div._lastParticle = timestamp;
-        }
-    } else {
-        div.classList.remove("glow");
+      particleSystem.update(delta);
     }
 
-    } else {
-    div.classList.remove("active");
-    div.classList.remove("glow");
+    if (playbackTime < totalDuration) {
+      animationFrame = requestAnimationFrame(animate);
+    } else if (!playbackEnded) {
+      playbackEnded = true;
+
+      setTimeout(() => alert("🎉 播放完成！"), 800);
+
+      playBtn.textContent = "▶";
+      panel.classList.remove("hidden");
+      document.body.classList.remove("recording-mode");
+      hasStarted = false;
     }
-});
-
-if (enableParticles) {
-    particleSystem.update(delta);
-}
-
-if (playbackTime < totalDuration) {
-    animationFrame = requestAnimationFrame(animate);
-} else if (!playbackEnded) {
-    playbackEnded = true;
-
-    setTimeout(() => alert("🎉 播放完成！"), 800);
-
-    playBtn.textContent = "▶";
-    panel.classList.remove("hidden");
-    document.body.classList.remove("recording-mode");
-    hasStarted = false;
-}
-}
-
+  }
 }

@@ -1,8 +1,12 @@
+/* ==========================================
+   BIZYSOUND - Global Core Styles
+   ========================================== */
+
 :root {
   --bg: #e6e6e6;
   --dark: #0a0a0a;
-  --accent: #000000;
-  --border: rgba(0,0,0,0.1);
+  --accent: #ccff00; /* 统一采用酸性亮黄 */
+  --border: rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -14,21 +18,16 @@
 
 body {
   margin: 0;
-
-  /* ✅ 背景底色 */
   background-color: var(--bg);
-   /* ✅ 背景图片 */
   background-image: url("/img/bg1.jpg");
-  background-size: cover;        /* 覆盖全屏 */
-  background-position: center;   /* 居中 */
-  background-repeat: no-repeat;  /* 不重复 */
-
- 
-  /* ✅ 防止白边 */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   min-height: 100vh;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* 背景canvas */
+/* 背景 Canvas */
 #canvas-container {
   position: fixed;
   top: 0;
@@ -37,510 +36,78 @@ body {
   opacity: 0.4;
 }
 
-
-/* ===== Logo 在左上角 ===== */
-.site-logo {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 1001;
-  -webkit-text-stroke: 0.5px var(--dark);
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1rem;
-  color: transparent;
-  transition: color 0.3s;
-}
-
-.site-logo:hover {
-  color: var(--accent);
-}
-
-
-/* 导航栏：克制而精致 */
-
-.nav {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 999;
-
-  pointer-events: none; /* 给磁吸用 */
-}
-
-
-
-/* ===== 内部卡片 ===== */
-.nav-inner {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  position: relative; /* 必须有 */
-  padding: 10px 20px;
-  pointer-events: auto;
-  /* ===== 核心：玻璃背景 ===== */
-
-    background: rgba(255,255,255,0.08); 
-    /* ❗比黑色更高级，像磨砂玻璃 */
-
-    backdrop-filter: blur(20px); 
-    -webkit-backdrop-filter: blur(20px); /* 兼容Safari */
-
-    /* ===== 边缘高光（关键） ===== */
-    border: 1px solid rgba(255,255,255,0.18);
-
-    /* ===== 阴影（悬浮感） ===== */
-    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-
-    border-radius: 12px;
-
-    transition: 0.4s;
-    position: relative;
-}
-
-.nav-inner::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-
-  border-radius: inherit;
-
-  background: linear-gradient(
-    120deg,
-    rgba(255,255,255,0.25),
-    rgba(255,255,255,0.05)
-  );
-
-  pointer-events: none;
-}
-
-
-
-
-
-/* ===== 下拉菜单容器 ===== */
-.dropdown {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-}
-
-/* 下拉菜单整体：默认隐藏 */
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    top: 100%; 
-    left: 0; 
-    padding: 15px 0; /* 增加上下呼吸感 */
-    background: transparent; 
-    z-index: 1000;
-}
-/* 下拉菜单内的链接样式 */
-.dropdown-menu a {
-    display: block;
-    position: relative;
-    padding: 8px 0;    
-    margin-bottom: 6px;
-    font-size: 12px;
-    color: rgba(0, 0, 0, 0.45);
-    text-decoration: none;
-    white-space: nowrap;
-    
-    /* ✅ 关键：给文字本身设置过渡，但位移量要小 */
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
-}
-
-/* 默认背景块 */
-.dropdown-menu a::before {
-    content: "";
-    position: absolute;
-    /* 背景块左右各延伸 12px */
-    inset: 0 -12px; 
-    
-    /* 1. 调整底色：磨砂效果需要白色或浅灰色的半透明感 */
-    background: rgba(255, 255, 255, 0.1); 
-    
-    /* 2. ✅ 核心：磨砂模糊 */
-    backdrop-filter: blur(10px); 
-    -webkit-backdrop-filter: blur(10px); /* 兼容 Safari */
-    
-    /* 3. 可选：加个极细的边缘高光，会让磨砂块更有质感 */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    
-    border-radius: 6px;
-    z-index: -1;
-    
-    /* 过渡动画保持不变 */
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
-}
-
-/* ===== 悬停交互：都动起来 ===== */
-
-.dropdown-menu a:hover {
-    color: #000;
-    /* ✅ 文字轻微右移 (比如 4px) */
-    transform: translateX(4px); 
-}
-
-.dropdown-menu a:hover::before {
-    background: rgba(0, 0, 0, 0.06);
-    
-    /* ✅ 背景块移动得比文字多一点 (比如 8px) */
-    /* 这样会产生一种背景在“追赶”或“承载”文字的灵动感 */
-    transform: translateX(2px); 
-}
-/* 鼠标悬停显示菜单 */
-.dropdown:hover .dropdown-menu {
-    display: block;
-    animation: fadeInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* 动画保持简洁 */
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-/* ===== 滚动后状态 ===== */
-.nav.scrolled .nav-inner {
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(30px);
-}
-
-/* ===== logo ===== */
-.logo {
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 1px;
-  color: #000000;
-}
-
-/* ===== 导航链接 ===== */
-.nav-links {
-  display: flex;
-  gap: 30px;
-  align-items: center;
-}
-
-
-.nav-links a, .dropdown-trigger {
-  font-weight: 500; 
-  color: #494949;
-  text-decoration: none;
-  font-size: 13px;
-  position: relative;
-  transition: 0.3s;
-  letter-spacing: 0.3px;
-  
-}
-
-/* hover颜色 */
-.nav-links a:hover {
-  color: #000000;
-}
-
-/* ===== 下划线动画 ===== */
-.nav-links a::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -4px;
-
-  width: 0;
-  height: 1px;
-
-  background: linear-gradient(90deg, #000000, transparent);
-  transition: 0.3s;
-}
-
-.nav-links a:hover::after {
-  width: 100%;
-}
-
-/* Hero Section */
+/* ===== Hero Section ===== */
 .hero {
-    height: 90vh;
-    padding: 15vh 5% 4vh; /* 底部增加 4vh 内边距，防止文字贴死边缘 */
-    display: flex;
-    flex-direction: column;
-    
+  height: 90vh;
+  padding: 15vh 5% 4vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .hero-title h1 {
-    font-size: 10vw;
-    letter-spacing: -0.05em;
-    text-transform: uppercase;
+  font-size: 10vw;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  font-weight: 900;
 }
 
 .hero-title h1.accent {
-    font-size: 12vw;
-    padding-left: 12vw;
-    color: transparent; 
-    -webkit-text-stroke: 1px var(--dark);
-    transform: translateY(6vh);
+  font-size: 12vw;
+  padding-left: 12vw;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--dark);
+  transform: translateY(6vh);
 }
 
+/* ===== Footer ===== */
 .site-footer {
-  /* 1. 彻底放弃绝对和固定定位 */
-  position: relative; 
-  
-  /* 2. 布局：靠左对齐，给点边距 */
+  position: relative;
   width: 100%;
-  padding: 20px 5% 20px; /* 顶部给 40px 间距，防止贴着 MIDI 舞台 */
-  
-  /* 3. 确保它在最下面 */
+  padding: 12px 5%; /* 缩小上下边距，紧贴底部 */
   clear: both;
-  
-  /* 4. 样式保持你的风格 */
-  font-size: 14px;
-  font-weight: 300;
-  color: #666;
+  font-size: 11px; /* 略微缩小字号 */
+  font-weight: 500; /* 字重改轻，减轻视觉存在感 */
+  color: rgba(0, 0, 0, 0.4); /* 使用半透明灰，使其融入背景 */
+  letter-spacing: 0.5px;
+  /* 取消了 text-transform: uppercase; 避免大写太张扬 */
 }
 
-
-
-/* 输入框 */
 input {
-    cursor: text;
+  cursor: text;
 }
 
-
-.mobile-menu-btn,
-.mobile-menu-panel{
-    display:none;
-}
-
-/* =================================
-   Mobile Responsive
-   ================================= */
-
+/* ===== Mobile Responsive ===== */
 @media (max-width: 768px) {
-
-
-/* ===== 背景 ===== */
-
-body {
+  body {
     background-position: center center;
     background-size: auto 100%;
-}
+  }
 
+  .hero {
+    height: auto;
+    min-height: 90vh;
+    padding: 30vh 6% 10vh;
+  }
 
-/* ===== Logo ===== */
+  .hero-title h1 {
+    font-size: 13vw;
+    letter-spacing: -0.06em;
+  }
 
-.site-logo {
-    top:18px;
-    left:18px;
-    font-size:14px;
-}
-
-
-/* ===== 手机导航 ===== */
-.nav {
-
-    top:20px;
-    right:20px;
-
-    left:auto;
-
-    transform:none;
-
-}
-
-.nav-inner {
-
-    padding:0;
-
-    background:none;
-
-    backdrop-filter:none;
-
-    -webkit-backdrop-filter:none;
-
-    border:none;
-
-    box-shadow:none;
-
-}
-
-
-
-
-
-    .nav-links{
-        display:none;
-    }
-
-    .mobile-menu-btn{
-        display:block;
-    }
-    
-
-
-
-/* ===== Hero ===== */
-
-.hero {
-
-    height:auto;
-    min-height:90vh;
-
-    padding:
-    30vh 6% 10vh;
-
-}
-
-
-/* 第一行 */
-
-.hero-title h1 {
-    
-    font-size:13vw;
-    letter-spacing:-0.06em;
-
-}
-
-
-/* 第二行 */
-
-.hero-title h1.accent {
-
-    font-size:14vw;
-
-    padding-left:0;
-
-    margin-top:90px;
-
-    transform:none;
-
-}
-
-
-
-/* ===== footer ===== */
+  .hero-title h1.accent {
+    font-size: 14vw;
+    padding-left: 0;
+    margin-top: 90px;
+    transform: none;
+  }
 
 .site-footer {
+    padding: 12px 6%;
+    font-size: 10px;
+    color: rgba(0, 0, 0, 0.35); /* 手机端背景较杂时保持低调 */
+  }
 
-    padding:20px 6%;
-
-    font-size:11px;
-
+  #canvas-container {
+    opacity: 0.25;
+  }
 }
-
-
-/* ===== canvas降低性能 ===== */
-
-#canvas-container {
-
-    opacity:0.25;
-
-}
-
-/* ===== 1. MENU 按钮美化 ===== */
-.mobile-menu-btn {
-    display: block;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    outline: none;
-    
-    /* ✅ 1. 彻底消除 iOS/Android 手机点击时的蓝色/灰色半透明遮罩 */
-    -webkit-tap-highlight-color: transparent;
-    
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.8px;
-    color: var(--dark);
-    
-    padding: 6px 0;
-    position: relative;
-    cursor: pointer;
-    transition: opacity 0.3s ease;
-}
-
-/* ✅ 2. 消除聚焦（Focus）时的系统蓝色高亮边框 */
-.mobile-menu-btn:focus,
-.mobile-menu-btn:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-/* 点击时的优雅缩放/透明度反馈，替代原生的丑蓝色框 */
-.mobile-menu-btn:active {
-    opacity: 0.6;
-}
-
-/* 底部动态下划线保持不变 */
-.mobile-menu-btn::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 2px;
-    width: 100%;
-    height: 1px;
-    background: #000;
-    transform: scaleX(0);
-    transform-origin: right;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.mobile-menu-btn:hover::after {
-    transform: scaleX(1);
-    transform-origin: left;
-}
-
-    /* ===== 2. 手机菜单展开面板 (核心修复) ===== */
-    .mobile-menu-panel {
-        display: flex;             /* 开启 Flex 布局 */
-        flex-direction: column;    /* 垂直排列链接 */
-        gap: 16px;                 /* 链接间的间距 */
-        
-        position: fixed;
-        top: 70px;                 /* 位于顶部导航下方 */
-        right: 20px;               /* 靠右对齐 */
-        width: 200px;              /* 面板宽度 */
-        padding: 20px;
-        
-        /* 高级玻璃磨砂质感 (延续你的全站风格) */
-        background: rgba(255, 255, 255, 0.4);
-        backdrop-filter: blur(30px);
-        -webkit-backdrop-filter: blur(30px);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        z-index: 1000;
-
-        /* ✅ 默认隐藏状态 (结合透明度与动画) */
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px) scale(0.95);
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* ✅ 3. 点击激活后的显示状态 (配合你的 JS class) */
-    .mobile-menu-panel.active {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0) scale(1);
-    }
-
-    /* ===== 3. 面板内链接样式 ===== */
-    .mobile-menu-panel a {
-        font-size: 14px;
-        font-weight: 500;
-        color: rgba(0, 0, 0, 0.7);
-        text-decoration: none;
-        transition: color 0.3s ease, transform 0.2s ease;
-    }
-
-    .mobile-menu-panel a:hover {
-        color: #000;
-        transform: translateX(4px); /* 轻微右移效果 */
-    }
-}
-
