@@ -105,7 +105,7 @@ body.recording-mode .panel {
   padding: 24px;
 
   /* 高街质感：白底 + 纯黑硬框 + 硬边深阴影 */
-  background: #ffffff;
+  background: #e1fcfa;
   border: var(--acid-border);
   box-shadow: 8px 8px 0px var(--acid-black);
   border-radius: 0px;
@@ -163,7 +163,7 @@ body.recording-mode .panel {
 .row input[type="number"] {
   flex: 1;
   max-width: 70px;
-  background: #fff;
+  background: #c1dad7;
   border: var(--acid-border);
   color: #000;
   padding: 6px;
